@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Ollama LLM Server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: acento-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Uncomment for GPU support (NVIDIA):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Pull the model on startup
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: acento-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["ollama", "pull", "llama3.1:8b"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+
+  # FastAPI Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: acento-classifier
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./sample_emails:/app/sample_emails
+      - ./data:/app/data
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1:8b
+      - SAMPLE_EMAILS_PATH=/app/sample_emails
+      - DATABASE_URL=sqlite+aiosqlite:///./data/classifications.db
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+volumes:
+  ollama_data:
