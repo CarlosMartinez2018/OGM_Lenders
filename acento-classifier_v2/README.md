@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # AcentoPartners Email Classifier
 
 AI-powered email classification system for AcentoPartners. Classifies incoming lender/bank emails by **Lender** and **Waiver Type** using a local LLM (Ollama) with a RAG-based knowledge base.
@@ -197,7 +196,3 @@ The system classifies emails into these lender/waiver combinations:
 - **Best accuracy**: `llama3.1:70b` — requires 40GB+ VRAM
 - Temperature is set to **0.1** for consistent, deterministic classifications
 - JSON mode is enforced via Ollama's `format="json"` parameter
-=======
-# OGM_Lenders
-Agente de captura de email y envio documentación seguros
->>>>>>> 8ba86d9f58d4503a5744ef5b4fee6072f79bb591
