@@ -54,6 +54,9 @@ source venv/bin/activate  # Linux/Mac
 # Install dependencies
 pip install -r requirements.txt
 
+# (Optional) Dev/test dependencies
+# pip install -r requirements-dev.txt
+
 # Copy environment config
 cp .env.example .env
 # Edit .env with your settings (Ollama URL, email paths, etc.)
