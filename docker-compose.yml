@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Base de Datos Relacional de Producción
+  postgres:
+    image: postgres:15-alpine
+    container_name: acento-db
+    environment:
+      - POSTGRES_USER=acento
+      - POSTGRES_PASSWORD=acento_secure_pass
+      - POSTGRES_DB=acento_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./data/postgres_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acento -d acento_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ollama LLM Server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: acento-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # GPU support (NVIDIA) Enabled
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Pull the model on startup
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: acento-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["ollama", "pull", "llama3.1:8b"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+
+  # FastAPI Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: acento-classifier
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./sample_emails:/app/sample_emails
+      - ./data:/app/data
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1:8b
+      - SAMPLE_EMAILS_PATH=/app/sample_emails
+      - DATABASE_URL=postgresql+asyncpg://acento:acento_secure_pass@postgres:5432/acento_db
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - OUTLOOK_MAILBOX=${OUTLOOK_MAILBOX}
+    depends_on:
+      ollama:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+volumes:
+  ollama_data:
