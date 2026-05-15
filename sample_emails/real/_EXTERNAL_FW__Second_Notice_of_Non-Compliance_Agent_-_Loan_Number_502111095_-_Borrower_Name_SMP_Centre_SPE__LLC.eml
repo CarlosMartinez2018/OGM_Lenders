@@ -1,0 +1,1394 @@
+Received: from DM4PR20MB6700.namprd20.prod.outlook.com (2603:10b6:8:185::17)
+ by SA1PR20MB7411.namprd20.prod.outlook.com with HTTPS; Wed, 4 Feb 2026
+ 13:47:11 +0000
+ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
+ b=hG22+5EYMgUpjushE8V91/AJYjCTenV8YQQGWtL7D1IZOEe5TLoqeOJ/hzlNenOvdL76gH5/Zs775uip+99qOEfJbcxrqqHuLh3CadKhgBMXM3zFA1SXsbRmiPgbkm7GrGQDJiDcghpF6kJEwT/er3sSAIUfBLO2b7bxsMRsZm/kBTn7WfIMe7+2Xo+SbWGxhnUt7M0IrMUn2qi9LqSHwAt5UcOEYVmgzgiZAuJF8/9S2GqEK2n1dNyxXWSbCqtbcQA99E03ijR7ZISCq/2kB2wpA5avoP+6Ek75GSPfbm3rVKKbYFGcuJTt/O69vQUZKCoRJF2dQPwrF4yvwvzIpg==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=uibOnPHYyrz2codSKRWMcYHloiNJbTtqZHC2gl7SLos=;
+ b=BP1qME0oH44YGfu1+TVRfHqaJn3fbr8sbcrAihe10sNhxaYJZ3CdcysMKuCB2BiGJ/+uz/bWdT2d34vdxr2lKD0y1Gx6d8g8Y76rNu+QOH89VrRDfxuRWZLxRK2rKUCnbMFLLm1CYMqGQvTQB90W8qMPNZkjoS4OH4T6/bQ4ugv5NZVS0BYi3L5gs+NLZxF3VRL5zUVkoK8aley940BvN2emMr1METcP8dDFmg6BjvpYJuqrA5Hvqqqdo3s7+dZ3f3RqW0HKs+F2T/dVq6gPXOLIwcyIS9Zn3Y2H5gYOwQ+zQsgSPssFP6vyPQQcUxFnKNCrAyhB2OeTsf4wbTSWsA==
+ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=softfail (sender ip
+ is 148.163.129.52) smtp.rcpttodomain=acentopartners.com
+ smtp.mailfrom=captiveadvisorypartners.com; dmarc=none action=none
+ header.from=captiveadvisorypartners.com; dkim=none (message not signed);
+ arc=pass (0 oda=1 ltdi=1 spf=[1,1,smtp.mailfrom=captiveadvisorypartners.com]
+ dkim=[1,1,header.d=captiveadvisorypartners.com]
+ dmarc=[1,1,header.from=captiveadvisorypartners.com])
+Received: from CH0PR03CA0308.namprd03.prod.outlook.com (2603:10b6:610:118::10)
+ by DM4PR20MB6700.namprd20.prod.outlook.com (2603:10b6:8:185::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9564.16; Wed, 4 Feb
+ 2026 13:47:09 +0000
+Received: from CH2PEPF0000009B.namprd02.prod.outlook.com
+ (2603:10b6:610:118:cafe::e1) by CH0PR03CA0308.outlook.office365.com
+ (2603:10b6:610:118::10) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9587.13 via Frontend Transport; Wed,
+ 4 Feb 2026 13:46:59 +0000
+Authentication-Results: spf=softfail (sender IP is 148.163.129.52)
+ smtp.mailfrom=captiveadvisorypartners.com; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none
+ header.from=captiveadvisorypartners.com;compauth=pass reason=130
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ captiveadvisorypartners.com discourages use of 148.163.129.52 as permitted
+ sender)
+Received: from dispatch1-us1.ppe-hosted.com (148.163.129.52) by
+ CH2PEPF0000009B.mail.protection.outlook.com (10.167.244.23) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9587.10
+ via Frontend Transport; Wed, 4 Feb 2026 13:47:08 +0000
+Authentication-Results-Original: ppe-hosted.com; spf=pass
+ smtp.mailfrom=captiveadvisorypartners.com; dmarc=none
+ header.from=captiveadvisorypartners.com header.policy=none; 
+X-Virus-Scanned: Proofpoint Essentials engine
+Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11020087.outbound.protection.outlook.com [52.101.46.87])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx1-us1.ppe-hosted.com (PPE Hosted ESMTP Server) with ESMTPS id 036B170007A;
+	Wed,  4 Feb 2026 13:47:03 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=UugZoVtbHuVUFAmMpSj0YKD6cuHHKKIGAjQRztCal6N85Hj5U55EXcjbbfpfmsVsDtIUcZxKKv+yDvBaW14cMTx68DVHRZHQ+/2Sl2qgMzjsXnOPwyrf26hkvSkqD4T6iXJEFA/aHZ44AoWFOW4iiahxljdKrgOXlgmj8PdzjZipwRwRC8aZxmW59iryiEGq8Vqs5GYWfolpqbkvtrmoIbsfA4D5y0GAyxS7hgd2WJAS2Oz9F4UweZn8sXb+eTMUWdWgt7PcxGdO/3UxEHjWmPL/zaOYoSknbuG4efjz7dxrr5nyv8CvuSk8q3QOwffnFW6ZeguB/YzIEYEAvl34uA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=uibOnPHYyrz2codSKRWMcYHloiNJbTtqZHC2gl7SLos=;
+ b=a9+adF5vvrMLgMtOaabb9XQ/+RHt3PbYIi8Fz9EY5PZlwSGTbsT4rO/twhebd/beKSaDtx0KoCCMl8lMg8GkpUG8dFiGM4BowpKmzZj94glGHbR6rA1+9+eE1mZ6W649G1APYL+9/wcl2cVvlYHF3FtlIaNAxZFg/XI2g5C4ulZakYdyC5Qt9389KWMZs/AA2+3TQIPIYGn5DL/kHeckGiacUbUSuYY+OPqJl9/unAZU4kWIA7Ccny/Itm6pB/mYkgUyYWHlDWPWWqwHTMVJw5B7FAOvNhaKruchQteBEJtIcungxW3stxagHhbpE907t14F5wbO4K+82cPPscwWEg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=captiveadvisorypartners.com; dmarc=pass action=none
+ header.from=captiveadvisorypartners.com; dkim=pass
+ header.d=captiveadvisorypartners.com; arc=none
+Received: from CY8PR10MB7378.namprd10.prod.outlook.com (2603:10b6:930:95::11)
+ by PH0PR10MB5729.namprd10.prod.outlook.com (2603:10b6:510:146::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9587.14; Wed, 4 Feb
+ 2026 13:47:00 +0000
+Received: from CY8PR10MB7378.namprd10.prod.outlook.com
+ ([fe80::740:99ef:1b6a:8047]) by CY8PR10MB7378.namprd10.prod.outlook.com
+ ([fe80::740:99ef:1b6a:8047%7]) with mapi id 15.20.9564.016; Wed, 4 Feb 2026
+ 13:47:00 +0000
+From: Terri Schell <terri.schell@captiveadvisorypartners.com>
+To: "CapitalOne_Insurance@cmservicing.com"
+	<CapitalOne_Insurance@cmservicing.com>
+CC: Lender-Insurance <lender-insurance@acentopartners.com>, German Montoya
+	<gmontoya@acentopartners.com>, Deb Tivnan
+	<deb.tivnan@captiveadvisorypartners.com>
+Subject: [EXTERNAL]FW: Second Notice of Non-Compliance Agent - Loan Number
+ 502111095 - Borrower Name SMP Centre SPE, LLC
+Thread-Index: AQHclXqQficcEPUswEe6RW3no+s3PbVxzohmgAC6m5A=
+Date: Wed, 4 Feb 2026 13:47:00 +0000
+Message-ID: <CY8PR10MB7378D91070DF9C5E28DE38449298A@CY8PR10MB7378.namprd10.prod.outlook.com>
+References: <IL1WBQE1FSU4.LLT98SRQA2R33@attitacapp2>
+ <SA1PR10MB644811B00C98AB04EF9D784FE498A@SA1PR10MB6448.namprd10.prod.outlook.com>
+In-Reply-To: <SA1PR10MB644811B00C98AB04EF9D784FE498A@SA1PR10MB6448.namprd10.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator:
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=captiveadvisorypartners.com;
+x-ms-traffictypediagnostic: CY8PR10MB7378:EE_|PH0PR10MB5729:EE_|CH2PEPF0000009B:EE_|DM4PR20MB6700:EE_|SA1PR20MB7411:EE_
+X-MS-Office365-Filtering-Correlation-Id: f799335e-78e5-451a-62f5-08de63f3e419
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+X-Microsoft-Antispam-Untrusted: BCL:0;ARA:13230040|366016|6049299003|376014|1800799024|7053199007|38070700021|13003099007|4053099003|4013099003|8096899003;
+X-Microsoft-Antispam-Message-Info-Original: =?us-ascii?Q?+1YY5PdJKCHey0YQcy9F/+saD9/dWu9+rdCFkTO29LvivNvLTE8vCfXrkqET?=
+ =?us-ascii?Q?QIC/VZY9mRWfsGmzgrepocyYHI8MIxcy+Khx5YxDILo5/lunQHgZfFKST5OT?=
+ =?us-ascii?Q?WZCJxymasgCEvkZ3eoEulnixJPm9EjgxuMarMQu7pos4cMtTeS83h20+dKcl?=
+ =?us-ascii?Q?N0dg/3GOoFI83klt0YJvFDxq3nE9RH2YgbWddagoGu/zMBRDnWYErATh5ZwS?=
+ =?us-ascii?Q?9cVCqBWnwJ6GFP4ngM2L7anyhc5r4syVGhg0Zp1Kl7K0s5qKcMRwJL3EI9Eq?=
+ =?us-ascii?Q?CBOv5A+/3ih43SSEFKNsA85QImgkRN5ydOrzfs+4fxzHvQEl6xzHAWaxNeUa?=
+ =?us-ascii?Q?mmjgULrVBORXfFub/jIjD8iANIkfnT0fVU+ulKyUlBbo0IvJ+hpW1AH2FQYy?=
+ =?us-ascii?Q?FKvlkivNBB/ye8iuwVF3hTcsXmw/XlOaXvU1/26xNYReLWtoTk7d33ytZqcE?=
+ =?us-ascii?Q?KTtZDlvzeJtbUzT8KDQcEzVRo9zkZLraU9SlK+zcgRNEnDXYAUMybqVGoAS/?=
+ =?us-ascii?Q?siSKRC+ExZT0SVMxKI1ziDU5tvSfuyRLw0DwPoNGUsDD4SL1OTaH7xT+y2b4?=
+ =?us-ascii?Q?6HtMG3jZMUZBKsjukpiNX62D/JOBgZlHV8/1ujuhDB6alPr0x1dRh6sOFYO1?=
+ =?us-ascii?Q?/VzhhFmB2l2tDe5ZkXeSLVw4rO88haqwws0hI/DIXcrpw95g6A5Iy3zKE5du?=
+ =?us-ascii?Q?9n3ZkfW6rYG9ii+mgMtFjblKBW83ZKFqVY+s6X2VyaDB93UwJUSNlY+22cg3?=
+ =?us-ascii?Q?6bkfhQa0HlhNuRQvV5/6OzTuGJ/CSB/uEtY1xjoDd5fywjboWVqyv798xe4O?=
+ =?us-ascii?Q?Zhc6n9beUe4ksfrhT0D+bLDp9BUJH06smMuHGSofYvXkNb7zMBC4rzozZvj/?=
+ =?us-ascii?Q?3OJ+53ziMg5RJIUK93UJHvLhRLz/jknjFawPxbeYzeiMlCN0TcAlAsfcH6xv?=
+ =?us-ascii?Q?aM5hoXu2/tKz46HEvE3Q73zhJ4rp0773Qm6UxMdEkWYVwdWfHSAtVOXmUfH+?=
+ =?us-ascii?Q?13Q1ihNnRXAOvxF2dIwrT9Cw/IPvlkfCB4y8cNlIQqniVFNMJEiGCvbzoU2G?=
+ =?us-ascii?Q?MhF8Jy4JZ1AD1M6sSEynOZxQymgcO6SDWgketiqNsHHSZ9aUp7eiW0HFFwmC?=
+ =?us-ascii?Q?Ae3BGLdb/bxnJdv/vUXMpow729CPs8KlGDctnBKJIcXcuwF7fBvAoJW3+zhB?=
+ =?us-ascii?Q?qtAJZuEEk4HwrlGaJm9ekFk73ur3WSd070Mlu5FPs8DmSa2U67aBAqTI7XYM?=
+ =?us-ascii?Q?cGFyLiGNYgI8oUDo8ltfx26uTLRTai41la7bDlYSfkPBobCjzMSabBAynbM/?=
+ =?us-ascii?Q?YTMqBiElzcO4zKsefFlOdaCVY5uqi3JUdDf3pCMhEduV0gqacpv315pFseB4?=
+ =?us-ascii?Q?t15CPa/0O7rKSJ//x5x0vYCYro5Y/nZa7tvax1PHkz6Wgc2tohFfJX9mac3d?=
+ =?us-ascii?Q?JlPzqwAYA7UVmthOJmnilmlF57I163PpOHMdnTIVYEb5EGsfZWSnHdoT4i1E?=
+ =?us-ascii?Q?UmN2P/yXj6pxFDkvnx3mJnlo8R8VWqXCDrB2KHsgAxl3/AlknyDKNb4BE0Lp?=
+ =?us-ascii?Q?zH331DjDnKMkXciKPq1MwCrlrNaC+2CfAMwDV+kb?=
+X-Forefront-Antispam-Report-Untrusted: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR10MB7378.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(6049299003)(376014)(1800799024)(7053199007)(38070700021)(13003099007)(4053099003)(4013099003)(8096899003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-Original-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-Original-0: =?us-ascii?Q?q71P0Z2/E4aPyHqooHpLV1k35smf/9i5g2ZdwPaHS8N138MtaoayKlfWXwmW?=
+ =?us-ascii?Q?frRnCpMdexJVh7FcuUtukPWu+rrZ6+UPTp2ScLKyMx8iMMYt/bXgY71nQ5UK?=
+ =?us-ascii?Q?dWWJRQuQhbwUcwbp/BsGbIANJxpGLWf7am6jrekTYoqdK8NOu39b+D51Yngv?=
+ =?us-ascii?Q?30Cd+ZwK13yMz9UtWxMeCMRDpla+N7UE/XYEuy5rIHPpCS9ZvfETlgsU9Smv?=
+ =?us-ascii?Q?iFsFc+vTH09IvJDJ0l4eEzdmma85lnJIlP2DI3GAdhrOYX94qX7LTE2a9n6q?=
+ =?us-ascii?Q?+710c0UL8paGOfELv/8APA3sTQn1nQu52aEWLhN6LBOOXSaxnc6yI4u3RiKA?=
+ =?us-ascii?Q?Bucnuvq7CnWQgg85FcCMmo0bxZo9Strdw44X6/PvzNz1VSyVgxPRjK0s329t?=
+ =?us-ascii?Q?8XWG1zAugYhFxm8/GH3fiOhjSz+mEFFXEwk25GS4l+6goaO00c3zru9W9/PE?=
+ =?us-ascii?Q?YP2hk6htbDloz69zGewdBGRzkDI1kAP7EaCJB+8ubvGnrBN0HLXBWNegcAmP?=
+ =?us-ascii?Q?lurhCkcpqbBI86gUS9TMjy1ONeEUeXS3CMRo5/HoOTONzmF0OwzEzkjQecno?=
+ =?us-ascii?Q?BaVKhOIyYqej/LtX4aDYwTJWu06zcRhZhr6OIxp/0czMZI91bFVGS7loXknh?=
+ =?us-ascii?Q?mK8d3QMpmSeGaIxIWrgbPxu+3OiDXNmMkwV7Ebivm1mE2/QskMr36hy1EmbS?=
+ =?us-ascii?Q?d/2sHTwqjm/Ix3DT+U5vAxrEgNUh01TZVtVTeAanSeTRg2jpJwTNAmFEs6As?=
+ =?us-ascii?Q?Jr9wIptEjtN/MsvAoLZS90Ltde6fAMwKHvE6jE44h48yjmHFxQoDIO0lxAqv?=
+ =?us-ascii?Q?azOzD1uPa4v8NpSyQ4XEXykxhgbnlnKla8umYfQd9IViqzHWKK9uqPp6IMx9?=
+ =?us-ascii?Q?CSiA9oly10lh6mKqSRJJ3Mv2VpXr3X+MU61GmbwNPol6zDO5gi1UpWykmthL?=
+ =?us-ascii?Q?K+lDpqF0CDVqQaHWUxAaNOdJBDoR5RFX7xiKOzOQIOREMja9/GxQ6M0xdwNH?=
+ =?us-ascii?Q?jSVrZ5m2+rmP+Lf+k7bibB9VFYR1tUQcNhwfCysVb16e01ykDitSJrZFuICj?=
+ =?us-ascii?Q?ELxrJltgSSpJX6Kq1PXKRJ/7iC/KONQo5oqheZ6wxUuKANpfk/d7/MKHm76j?=
+ =?us-ascii?Q?1i/HWkvsC/+dkKGwdegWQqGloRQAlBUwqCWwCJT7Ne8KSgzmxs4kfXVjliS4?=
+ =?us-ascii?Q?jOowg8dklsw1YQ5ki9phRiYfECclHHTAof++PKICLn1ddMeyPeGgGm8eFhTq?=
+ =?us-ascii?Q?Mq+rdK7wGiGOQcS0nJl4IRQuImBQL5s9ytHq3YYregcPS3RgF9tHkMA+MJU3?=
+ =?us-ascii?Q?i6/6P9RIuO5iLS48s6RvE7AX1yvD1d3uHl+KAFMlJjvLYVpjvYLOlkYRommS?=
+ =?us-ascii?Q?yU4ZW6tMj5UnWCuJkzCVH+yA5W7NIzdQMV5qpIKeteonDs21EwDNA4JitDjo?=
+ =?us-ascii?Q?HOtOel+KLab7LrIidfHb5ZvI1ng/Mh8HJDC8n8PbmLowFlRrKAMBWGGq3BxR?=
+ =?us-ascii?Q?7obpbCw9iS0LgsOdKJBP4+DTr29vey3rUWBbPKBpgJLZpNxp57uPbVOfucy+?=
+ =?us-ascii?Q?do2XjraNQbz2mxMg7PQ/Az9AJdX5PDA8AaDP40Jtb2lZRvBHJa+vNny58dqC?=
+ =?us-ascii?Q?Jf/FUS1rbssUS57bvQmMGtfH9qMeLl0u8VO9Ohs7Mau7e9KpxyNcYGiJknzn?=
+ =?us-ascii?Q?xJkA1V94zv880izKnrAQgGrZILW1TdYtMc1QuQlriyH34JS9ceFS0S2tooLP?=
+ =?us-ascii?Q?u7WaSroe+N96OV8vENgkIFaWGt4qv11PkKnEgdlhTr/XBmAXaEDx?=
+Content-Type: multipart/related;
+	boundary="_004_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_";
+	type="multipart/alternative"
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB5729
+X-MDID: 1770212824-7D0OpsLwwJ8o
+X-PPE-STACK: {"stack":"us1"}
+X-MDID-I: us1;ut7;1770212824;7D0OpsLwwJ8o;<terri.schell@captiveadvisorypartners.com>;0ad4c5c347fe26352b7fd4100f4c6e5c
+X-PPE-TRUSTED: V=1;DIR=IN;
+Return-Path: terri.schell@captiveadvisorypartners.com
+X-MS-Exchange-Organization-ExpirationStartTime: 04 Feb 2026 13:47:08.8260
+ (UTC)
+X-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit
+X-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000
+X-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit
+X-MS-Exchange-Organization-Network-Message-Id: f799335e-78e5-451a-62f5-08de63f3e419
+X-EOPAttributedMessage: 0
+X-EOPTenantAttributedMessage: 41725d73-0268-471b-b1ee-ff56be3e5b16:0
+X-MS-Exchange-Organization-MessageDirectionality: Incoming
+X-MS-Exchange-Transport-CrossTenantHeadersStripped: CH2PEPF0000009B.namprd02.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Exchange-Organization-AuthSource: CH2PEPF0000009B.namprd02.prod.outlook.com
+X-MS-Exchange-Organization-AuthAs: Anonymous
+X-MS-Office365-Filtering-Correlation-Id-Prvs: be97c6d2-ecd1-4c71-db59-08de63f3df57
+X-LD-Processed: 41725d73-0268-471b-b1ee-ff56be3e5b16,ExtAddr
+X-MS-Exchange-AtpMessageProperties: SA|SL
+X-MS-Exchange-Organization-SCL: -1
+X-Microsoft-Antispam: BCL:0;ARA:13230040|6049299003|82310400026|12012899012|35042699022|13003099007|4053099003|4076899003|8096899003;
+X-Forefront-Antispam-Report: CIP:148.163.129.52;CTRY:US;LANG:en;SCL:-1;SRV:;IPV:NLI;SFV:NSPM;H:dispatch1-us1.ppe-hosted.com;PTR:dispatch1-us1.ppe-hosted.com;CAT:NONE;SFS:(13230040)(6049299003)(82310400026)(12012899012)(35042699022)(13003099007)(4053099003)(4076899003)(8096899003);DIR:INB;
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Feb 2026 13:47:08.4732
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: f799335e-78e5-451a-62f5-08de63f3e419
+X-MS-Exchange-CrossTenant-Id: 41725d73-0268-471b-b1ee-ff56be3e5b16
+X-MS-Exchange-CrossTenant-AuthSource: CH2PEPF0000009B.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: Internet
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR20MB6700
+X-MS-Exchange-Transport-EndToEndLatency: 00:00:03.4403201
+X-MS-Exchange-Processed-By-BccFoldering: 15.20.9564.017
+X-Microsoft-Antispam-Mailbox-Delivery:
+	ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(944506478)(944626604)(920097)(930201)(20251009114)(140003)(1420198);
+X-Microsoft-Antispam-Message-Info:
+	=?Windows-1252?Q?bkInmANkRWAtUyDFgLh+WX0djdNIAP0NzI/3/eUrXo5Fl2DneOXKzZ2P?=
+ =?Windows-1252?Q?Cb73GACust0tUHraNxBHZYySahOZWBhoNSWOAsipupMLPia+4GfI2Pyb?=
+ =?Windows-1252?Q?rpVdpzCDKwVIk8iePC+7TidK7NlMsOlSXnb0sdqKLZct8kE34CWGHHoe?=
+ =?Windows-1252?Q?de0eqAlfTEpQz9bw7Zf4+hI8eOy8dUJw1AChsluMzD3tkjwTVORz/ZUB?=
+ =?Windows-1252?Q?5RR9j2NtonBnrDIjbH6P+scnGhFsLKrHQKDFEitTnn8QlNzo0A/3wl/8?=
+ =?Windows-1252?Q?qHrx3MFdqV/vxrcN83oea2K8GddF/n0YVe1wSuQ+3PxjeFyapDrOXKUI?=
+ =?Windows-1252?Q?GrflH3GjLt67TuBd7k+veHUDMFrd6E90EQOlCNT/V2YDJ7l3pEjxjleA?=
+ =?Windows-1252?Q?WYVKAUQGZ2hISFoXTxmAkDIF7lS81kIoSr0uaFvCH6tcmsl7nVQ6pvWp?=
+ =?Windows-1252?Q?3ZF8Cuq7AGBk/TMDc8PCl6/LgIBGPQlqDmU+opEbhN+d5j3pvlZDJRtQ?=
+ =?Windows-1252?Q?jTwoxJa0sdETs+joRAbyfB0lZWiQa7OHELhZgXbaI3s/9JSNtSJOFXKj?=
+ =?Windows-1252?Q?1hYRXDI8MsKo1IQUCJkPTsrxtwCvnXZxZpCyenxFoNAnVMGZDUdaxaT/?=
+ =?Windows-1252?Q?so14Y0+tqp6HJ5jZxj6/TKipOpFEtWZnNRljLrUaup6M2CDnLWz/odpp?=
+ =?Windows-1252?Q?k91fD8xjWWa0Dt+OFFXGxnOf0iazGSep8aAbVMPFu9FzfT3nJB3y/nL1?=
+ =?Windows-1252?Q?SLwGK9naPwhkmDJvIGT5kRJop1CylSKBO42IiOpAVuwV2utdHRJ1Ha8/?=
+ =?Windows-1252?Q?Ta9/zG3zsjWXYeEn35Y+PSs/PTcZMnJB4oGkqwGAkVPovbBbaGbiysPZ?=
+ =?Windows-1252?Q?Tf0PG20gjKhVfMnHNFaNq2jz4ig8JjbVUKt6GJQ2onPPt+eJgy5uvR5u?=
+ =?Windows-1252?Q?8i0v7JLWZMncwKsoZyMmVKgCC7xOmaUDpQOHzRNUoSZHdDIgVwaTG+us?=
+ =?Windows-1252?Q?O7JUvmUQw6dyTcK5ksTqoIPLtxXopLkk/SSWLKNj/ToHICMw+zamQSOu?=
+ =?Windows-1252?Q?adVr8HU8Ivci/Gix1XDq9ogX+qEteQh7liJs1lRyKK8B/BsiODx/jDjL?=
+ =?Windows-1252?Q?aj63lDOhm43mMzRfXUu4d4KffEFK/244FpMX1jfarHqTrYpcxOjHdiuq?=
+ =?Windows-1252?Q?cAIj7ZNVkMGS7X0dy+elXZcxTy1GO88ocZxIp6nxCSDsqajYXVI9U1jX?=
+ =?Windows-1252?Q?mhwlLtKS/kHP42lqQaGNQqAGL7tN6boEj312c70jGqeNQx1tH5PscV2c?=
+ =?Windows-1252?Q?PZmY5ZQqkPPGpgjX2GRltX7UiES+99ey8ifr9D1dOEKt0SfVsJRgAiSI?=
+ =?Windows-1252?Q?J0zjGDd0Fbjv0tnmLH5BSkYwG9kcKn7GNQ7thwj0XgE4K4gleyXVE9hY?=
+ =?Windows-1252?Q?DYTwdkMmkPB8i2lO9FpSn7NLgVweoOcxX5Na2iO+LzODpP+qXhbxS7ZB?=
+ =?Windows-1252?Q?QncOKYVOKOqz9Ff4sWJywNjsTpnkOieZ0UPpfUhEo+J7PFB/cC0EnZMa?=
+ =?Windows-1252?Q?8pnmMm0kvEYZDhQetNHbtRMhkrUqJgVObgkVlu8DYZqsA0XgT3exAs0W?=
+ =?Windows-1252?Q?QAagny4JyHie0xzFnk/fEAYr8+pjTCo6CqH0gbQlyIfYQsnTbCpLN/3u?=
+ =?Windows-1252?Q?TbNuTOUX7Xh1QdW2n+zgHdGKeNDh+kmF1gRdvbHpImulp8QryEEbr8Z4?=
+ =?Windows-1252?Q?/DEdnSKWnOoiq6zd6Cv9K3ripUEP/zzAVsgouIb6p1fU2487A05Vzp5j?=
+ =?Windows-1252?Q?TwDqLRNujAu5XKUktCU0PZC87dH9Vx6aKDo2ysaMiBpVV/kg0XMsR4ya?=
+ =?Windows-1252?Q?GaA5oqm4HXi8I95I40upftza8/dltuY2Q/a0WGcksO7EXW2riSmtpoWK?=
+ =?Windows-1252?Q?fi/et87GPgwuQn+8Qa1v2Lr0Byz+BX7AXcHq8fWyIQ4qWnsEZxmxmpgO?=
+ =?Windows-1252?Q?jsexlg246u6/YCWy4yDXOGuW9TNiwPg5/tGzYmn8mTmLqLYWmKWhsg4m?=
+ =?Windows-1252?Q?h1HQkoKYGbJF92hyuhrIuI+Teci5oQUQ63boFsEmeAejAe/Sn/UOIdsR?=
+ =?Windows-1252?Q?NuJWOTtfXoWcb7g8DAwWSx6B5gr4X0emPPSp0XqV1a/tcLlYZwmu373U?=
+ =?Windows-1252?Q?AoI6+Axc8BehgPT/pHmmNXjNXlIUF0XTqOqzFM+MvTh+fV8I/fIRzgaB?=
+ =?Windows-1252?Q?51GizfbbzOnBrdZcgtPj/BmCt7N4kvcYdpPxmqxJTq40DOtW6oi4yVWt?=
+ =?Windows-1252?Q?pewH76Yvu/jquI97lnxDLtrtu/idyMLFcTq/ee4JF/c79PA9be5S5YN5?=
+ =?Windows-1252?Q?vBLg8C/CDtIOjJmebdXAbg4b9gIyT5aE2nj84WmgL/+kofYdkmnhmtUm?=
+ =?Windows-1252?Q?W/CCF6OM34PnvS/Bztr+Gez6w0koF3il34Cs7+jrpklLoFia/cDWq47F?=
+ =?Windows-1252?Q?ZMXLdhJYA3/sGw+gahGn7orPRKw4XmQWAZIA/0klCk27uOtpMhjXtCtg?=
+ =?Windows-1252?Q?ap9XoHPiyS2ThSWEv+WiyJ4pkl5SCgSCaW0SHKwy2gHvVtEGhJK4+ITy?=
+ =?Windows-1252?Q?hFJ+Sgo3Qz+6waxF05Vom11m3NIZvrT++QTm5H1bBd2C5Kf59flfRwwY?=
+ =?Windows-1252?Q?ZdmAnMIUiY2BCzDN2vbCWGP4mGFGIl3aKDfTh0Qb546iQXx33UzszdAn?=
+ =?Windows-1252?Q?AdtRie5CYpARNU4fxKEFjMYvUloXso9zmtjc4gtRecgGrUvbRTDd3Gvn?=
+ =?Windows-1252?Q?qpwAuBjWBE1fGIoVe4wRKVgboGYXQAi9YRjo8E6iQZyMHBHaREvS9MpC?=
+ =?Windows-1252?Q?4n/J+rSOyaqzKHfDygYRN6rmF8iSRgS0FfVxKyFCYAyXkNWRu3hpLHYy?=
+ =?Windows-1252?Q?jV90DpqjfDEOOiugvtAm0IYxIPw2jRpumYwBvu9pHnpdtQw9KalDrFK1?=
+ =?Windows-1252?Q?WZpdB2BN?=
+MIME-Version: 1.0
+
+--_004_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_
+Content-Type: multipart/alternative;
+	boundary="_000_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_"
+
+--_000_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+CAUTION: This email originated from outside the organization. Do not click =
+links or open attachments unless you recognize the sender and know the cont=
+ent is safe.
+Hello.  Your inquiry has been sent to me for a response.
+
+The policies have not been received from the insurance company.  We will fo=
+rward upon receipt.
+
+The Ordinance & Law coverage is fully compliant with Fannie Mae/Freddie Mac=
+ requirements.   It is 10% of the TIV and paid in addition to the actual da=
+mages, subject to the full policy limit.
+
+Please let me know if you have any questions.
+
+Kind regards,
+
+Terri
+
+[cid:image001.png@01DC95B0.C34FC580]
+Terri Schell
+Senior Consultant
+E: terri.schell@captiveadvisorypartners.com<mailto:terri.schell@captiveadvi=
+sorypartners.com>
+T: (513) 805-5030
+www.captiveadvisorypartners.com<http://www.captiveadvisorypartners.com/>
+CA Producer License:  568740
+
+
+From: Lisa Willitts <lisa.willitts@captiveadvisorypartners.com>
+Sent: Tuesday, February 3, 2026 9:20 PM
+To: Terri Schell <terri.schell@captiveadvisorypartners.com>
+Subject: Fw: Second Notice of Non-Compliance Agent - Loan Number 502111095 =
+- Borrower Name SMP Centre SPE, LLC
+
+
+
+Lisa Willitts
+Captive Advisory Partners
+(714) 454-5555
+
+________________________________
+From: Capital One Insurance Servicing (Do Not Reply) <CapitalOne_Insurance@=
+cmservicing.com<mailto:CapitalOne_Insurance@cmservicing.com>>
+Sent: Tuesday, February 3, 2026 9:04:03 PM
+To: Lisa Willitts <lisa.willitts@captiveadvisorypartners.com<mailto:lisa.wi=
+llitts@captiveadvisorypartners.com>>
+Subject: Second Notice of Non-Compliance Agent - Loan Number 502111095 - Bo=
+rrower Name SMP Centre SPE, LLC
+
+
+
+
+INSURANCE NOTIFICATION - SECOND NOTICE OF NON-COMPLIANCE
+**ACTION REQUIRED**
+
+
+
+
+
+
+
+RE: Property: The Centre at Silver Spring (fka Knights Bridge I Apartments)=
+, 3310 Teagarden Circle, Silver Spring, MD 20904
+
+Policy Number: TR00926892026
+
+Loan Number: 502111095
+
+
+
+Dear Agent,
+
+
+
+As we have previously communicated, this letter is to remind you that the i=
+nsurance coverage you provided for the above referenced property is not com=
+pliant. Your immediate attention is required to resolve the non-compliance =
+issues in a timely manner. Any non-compliant coverage that has not been res=
+olved within 90 days of the renewal date will be subject to additional acti=
+on which may include force placed coverage at the Insured's expense.
+
+
+
+The coverages found to be non-compliant are described on the attached exhib=
+it, and revisions should be provided to Capital One immediately.
+
+
+
+The revised certificate(s) should be forwarded to:
+
+
+
+Fax: 855-588-0601
+
+Email: insurance@capitalone.com<mailto:insurance@capitalone.com>
+
+
+
+Thank you in advance for providing the required revisions to the existing c=
+overage. If you have any questions or concerns regarding the non-compliant =
+coverages, please feel free to contact us. If you have already provided the=
+ requested revisions, please disregard this letter.
+
+
+
+Sincerely,
+
+
+
+Insurance Department
+
+Phone: 704-620-6625
+
+
+
+Capital One
+
+INSURANCE COMPLIANCE REVIEW
+
+
+
+Property: The Centre at Silver Spring (fka Knights Bridge I Apartments)
+
+
+
+Loan Number: 502111095
+
+
+
+Type of Coverage: Property / Liability
+
+
+
+Policy Period: 01/05/2026 - 01/05/2027
+
+
+
+The following issues must be addressed:
+
+
+
+Property 001 : The Centre at Silver Spring (fka Knights Bridge I Apartments=
+), 3310 Teagarden Circle, Silver Spring, MD 20904
+
+Document
+
+Details
+
+Requirement
+
+Current
+
+Deficiency
+
+Required
+
+ACORD 28 Dated 01/02/2026
+
+Policy# TR00926892026
+
+Full Policy Received Status
+
+Missing
+
+A complete Full policy is required including all the forms and endorsement =
+listed in the schedule
+
+Policy must be provided within 90 days of policy renewal date
+
+ACORD 28 Dated 01/02/2026
+
+Policy# ZJP41K26ANSV
+
+Full Policy Received Status
+
+Missing
+
+A complete Full policy is required including all the forms and endorsement =
+listed in the schedule
+
+Policy must be provided within 90 days of policy renewal date
+
+ACORD 28 Dated 01/02/2026
+
+Policy# TR00926892026
+
+Ordinance or Law Limit
+
+$3,534,268
+
+Limit is less than required
+
+100% of Full Replacement Cost
+
+
+
+
+
+
+
+________________________________
+
+This message is for the designated recipient only and may contain privilege=
+d, proprietary, or otherwise private information. If you have received it i=
+n error, please notify the sender immediately and delete the original. Any =
+other use of the email by you is prohibited.
+
+--_000_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:dt=3D"uuid:C2F41010-65B3-11d1-A29F-00AA00C14882" xmlns:m=3D"http://sc=
+hemas.microsoft.com/office/2004/12/omml" xmlns=3D"http://www.w3.org/TR/REC-=
+html40"><head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+><meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
+<!--[if !mso]><style>v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style><![endif]--><style><!--
+/* Font Definitions */
+@font-face
+	{font-family:Helvetica;
+	panose-1:2 11 6 4 2 2 2 2 2 4;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Aptos;}
+@font-face
+	{font-family:Cambria;
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Garamond;
+	panose-1:2 2 4 4 3 3 1 1 8 3;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	font-size:12.0pt;
+	font-family:"Aptos",sans-serif;}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:#0563C1;
+	text-decoration:underline;}
+p.xmsonormal, li.xmsonormal, div.xmsonormal
+	{mso-style-name:x_msonormal;
+	margin:0in;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+p.xmsoheader, li.xmsoheader, div.xmsoheader
+	{mso-style-name:x_msoheader;
+	margin:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;}
+p.xmsomessageheader, li.xmsomessageheader, div.xmsomessageheader
+	{mso-style-name:x_msomessageheader;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:2.0pt;
+	margin-left:.25in;
+	font-size:12.0pt;
+	font-family:"Garamond",serif;
+	letter-spacing:-.25pt;}
+span.EmailStyle29
+	{mso-style-type:personal-reply;
+	font-family:"Cambria",serif;
+	color:black;
+	font-weight:normal;
+	font-style:normal;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;
+	mso-ligatures:none;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"#0563C1" vlink=3D"purple" style=3D"word-wrap:b=
+reak-word">
+<table border=3D"0" cellspacing=3D"0" cellpadding=3D"0" align=3D"left" widt=
+h=3D"`&quot;100%`&quot;">
+<tbody>
+<tr>
+<td style=3D"background:#bba555;padding:5.25pt 5.5pt 5.25pt 1.5pt"></td>
+<td width=3D"`&quot;100%`&quot;" style=3D"width:100.0%;background:#ffe599;p=
+adding:5.25pt =0A=
+3.75pt 5.25pt 11.25pt; word-wrap:break-word" cellpadding=3D"`&quot;7px" 5px=
+=3D"" 7px=3D"" 15px`?=3D"" color=3D"`&quot;#212121`&quot;">
+<div>
+<p><span style=3D"font-size:11pt;font-family:Arial,sans-serif;color:=0A=
+#212121"><b>CAUTION:</b> This email originated from outside the organizatio=
+n. Do not click links or open attachments unless you recognize the sender a=
+nd know the content is safe.
+</span></p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div>
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black">Hello.&nbsp; Your inquiry has been sent to m=
+e for a response.
+<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black">The policies have not been received from the=
+ insurance company.&nbsp; We will forward upon receipt.
+<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black">The Ordinance &amp; Law coverage is fully co=
+mpliant with Fannie Mae/Freddie Mac requirements.&nbsp;&nbsp; It is 10% of =
+the TIV and paid
+<i>in addition to the actual damages, </i>subject to the full policy limit.=
+&nbsp; <o:p>
+</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black">Please let me know if you have any questions=
+.
+<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black">Kind regards,
+<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black">Terri<o:p></o:p></span></p>
+<div>
+<p class=3D"MsoNormal" style=3D"background:white"><span style=3D"color:blac=
+k;mso-ligatures:standardcontextual"><o:p>&nbsp;</o:p></span></p>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" style=3D"background:white;border-collapse:collapse">
+<tbody>
+<tr style=3D"height:45.0pt">
+<td width=3D"100" valign=3D"top" style=3D"width:74.7pt;padding:0in 5.4pt 0i=
+n 5.4pt;height:45.0pt">
+<p class=3D"MsoNormal" style=3D"mso-margin-top-alt:auto;mso-margin-bottom-a=
+lt:auto"><span style=3D"color:black"><img width=3D"132" height=3D"68" style=
+=3D"width:1.375in;height:.7083in" id=3D"Picture_x0020_1" src=3D"cid:image00=
+1.png@01DC95B0.C34FC580"><span style=3D"mso-ligatures:standardcontextual"><=
+o:p></o:p></span></span></p>
+</td>
+<td width=3D"205" valign=3D"top" style=3D"width:154.1pt;padding:0in 5.4pt 0=
+in 5.4pt;height:45.0pt">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:11.0pt;font-family:&quot=
+;Cambria&quot;,serif;font-variant:small-caps;color:#013370;mso-ligatures:st=
+andardcontextual">Terri Schell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;</span></b><span style=
+=3D"font-size:11.0pt;font-family:&quot;Cambria&quot;,serif;font-variant:sma=
+ll-caps;color:#242424;mso-ligatures:standardcontextual"><o:p></o:p></span><=
+/p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;font-variant:small-caps;color:black;mso-ligatures:standar=
+dcontextual">Senior Consultant
+<o:p></o:p></span></p>
+</td>
+<td width=3D"362" valign=3D"top" style=3D"width:271.7pt;padding:0in 5.4pt 0=
+in 5.4pt;height:45.0pt">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;color:black;mso-l=
+igatures:standardcontextual">E:</span></b><span style=3D"font-size:10.0pt;c=
+olor:black;mso-ligatures:standardcontextual">&nbsp;<a href=3D"mailto:terri.=
+schell@captiveadvisorypartners.com"><span style=3D"color:#467886">terri.sch=
+ell@captiveadvisorypartners.com</span></a><br>
+<b>T:</b>&nbsp;(513) 805-5030</span><span style=3D"font-size:10.0pt;color:#=
+242424;mso-ligatures:standardcontextual"><o:p></o:p></span></p>
+<p class=3D"MsoNormal"><b><u><span style=3D"font-size:10.0pt;color:#013370;=
+mso-ligatures:standardcontextual"><a href=3D"https://nam10.safelinks.protec=
+tion.outlook.com/?url=3Dhttp%3A%2F%2Fwww.captiveadvisorypartners.com%2F&amp=
+;data=3D05%7C02%7Cgmontoya%40acentopartners.com%7Cf799335e78e5451a62f508de6=
+3f3e419%7C41725d730268471bb1eeff56be3e5b16%7C0%7C0%7C639058096320712542%7CU=
+nknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW=
+4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3DenJDOG1VHYR=
+TTPXCv7ZGtcR8gk3Tr9NvNi%2F0XCZjUg0%3D&amp;reserved=3D0" originalsrc=3D"http=
+://www.captiveadvisorypartners.com/" target=3D"_blank" title=3D"http://www.=
+captiveadvisorypartners.com/"><span style=3D"color:#013370">www.captiveadvi=
+sorypartners.com</span></a><o:p></o:p></span></u></b></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:10.0pt;color:black;mso-liga=
+tures:standardcontextual">CA Producer License: &nbsp;568740<o:p></o:p></spa=
+n></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class=3D"MsoNormal"><span style=3D"color:black;mso-ligatures:standardcon=
+textual"><o:p>&nbsp;</o:p></span></p>
+</div>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+mbria&quot;,serif;color:black"><o:p>&nbsp;</o:p></span></p>
+<div>
+<div style=3D"border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0in =
+0in 0in">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:11.0pt;font-family:&quot=
+;Calibri&quot;,sans-serif">From:</span></b><span style=3D"font-size:11.0pt;=
+font-family:&quot;Calibri&quot;,sans-serif"> Lisa Willitts &lt;lisa.willitt=
+s@captiveadvisorypartners.com&gt;
+<br>
+<b>Sent:</b> Tuesday, February 3, 2026 9:20 PM<br>
+<b>To:</b> Terri Schell &lt;terri.schell@captiveadvisorypartners.com&gt;<br=
+>
+<b>Subject:</b> Fw: Second Notice of Non-Compliance Agent - Loan Number 502=
+111095 - Borrower Name SMP Centre SPE, LLC<o:p></o:p></span></p>
+</div>
+</div>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:#212121"><o:p>&nbsp;</o:p></spa=
+n></p>
+</div>
+<div id=3D"ms-outlook-mobile-body-separator-line">
+<div>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</div>
+<div id=3D"ms-outlook-mobile-signature">
+<div>
+<p class=3D"MsoNormal">Lisa Willitts&nbsp;<o:p></o:p></p>
+</div>
+<div>
+<p class=3D"MsoNormal">Captive Advisory Partners&nbsp;<o:p></o:p></p>
+</div>
+<div>
+<p class=3D"MsoNormal">(714) 454-5555&nbsp;<o:p></o:p></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</div>
+<div class=3D"MsoNormal" align=3D"center" style=3D"text-align:center">
+<hr size=3D"2" width=3D"98%" align=3D"center">
+</div>
+<div id=3D"divRplyFwdMsg">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:11.0pt;font-family:&quot=
+;Calibri&quot;,sans-serif;color:black">From:</span></b><span style=3D"font-=
+size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;color:black"> Capita=
+l One Insurance Servicing (Do Not Reply) &lt;<a href=3D"mailto:CapitalOne_I=
+nsurance@cmservicing.com">CapitalOne_Insurance@cmservicing.com</a>&gt;<br>
+<b>Sent:</b> Tuesday, February 3, 2026 9:04:03 PM<br>
+<b>To:</b> Lisa Willitts &lt;<a href=3D"mailto:lisa.willitts@captiveadvisor=
+ypartners.com">lisa.willitts@captiveadvisorypartners.com</a>&gt;<br>
+<b>Subject:</b> Second Notice of Non-Compliance Agent - Loan Number 5021110=
+95 - Borrower Name SMP Centre SPE, LLC</span>
+<o:p></o:p></p>
+<div>
+<p class=3D"MsoNormal">&nbsp;<o:p></o:p></p>
+</div>
+</div>
+<div>
+<div>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">&nbsp;</span><o=
+:p></o:p></p>
+<p class=3D"xmsoheader" align=3D"center" style=3D"text-align:center"><a nam=
+e=3D"x__Hlk54964011"><b><u><span style=3D"font-family:&quot;Arial&quot;,san=
+s-serif">INSURANCE NOTIFICATION &#8211; SECOND NOTICE OF NON-COMPLIANCE<br>
+**ACTION REQUIRED**</span></u></b><o:p></o:p></a></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"mso=
+-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-family:&quot=
+;Helvetica&quot;,sans-serif;color:black">&nbsp;</span><o:p></o:p></span></p=
+>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"mso=
+-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-family:&quot=
+;Helvetica&quot;,sans-serif">RE:
+<b>Property:</b> <span style=3D"color:black">The Centre at Silver Spring (f=
+ka Knights Bridge I Apartments), 3310 Teagarden Circle, Silver Spring, MD 2=
+0904</span></span><o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:18.7pt"><span style=3D"=
+mso-bookmark:x__Hlk54964011"><b><span style=3D"font-size:10.0pt;font-family=
+:&quot;Helvetica&quot;,sans-serif">Policy Number:</span></b></span><span st=
+yle=3D"mso-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-fa=
+mily:&quot;Helvetica&quot;,sans-serif">
+<span style=3D"color:black">TR00926892026</span></span><o:p></o:p></span></=
+p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:18.7pt"><span style=3D"=
+mso-bookmark:x__Hlk54964011"><b><span style=3D"font-size:10.0pt;font-family=
+:&quot;Helvetica&quot;,sans-serif">Loan Number:</span></b></span><span styl=
+e=3D"mso-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-fami=
+ly:&quot;Helvetica&quot;,sans-serif">
+<span style=3D"color:black">502111095</span></span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"mso=
+-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-family:&quot=
+;Helvetica&quot;,sans-serif">Dear
+<span style=3D"color:black">Agent,</span></span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in;text-align:justify"=
+><span style=3D"mso-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0p=
+t;font-family:&quot;Helvetica&quot;,sans-serif">As we have previously commu=
+nicated, this letter is to remind you that the insurance
+ coverage you provided for the above referenced property is not compliant. =
+Your immediate attention is required to resolve the non-compliance issues i=
+n a timely manner. Any non-compliant coverage that has not been resolved wi=
+thin 90 days of the renewal date
+ will be subject to additional action which may include force placed covera=
+ge at the Insured&#8217;s expense.
+</span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in;text-align:justify"=
+><span style=3D"mso-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0p=
+t;font-family:&quot;Helvetica&quot;,sans-serif">The coverages found to be n=
+on-compliant are described on the attached exhibit,
+ and revisions should be provided to Capital One immediately. </span><o:p><=
+/o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in;text-align:justify"=
+><span style=3D"mso-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0p=
+t;font-family:&quot;Helvetica&quot;,sans-serif">The revised certificate(s) =
+should be forwarded to:
+</span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" align=3D"center" style=3D"margin-left:0in;te=
+xt-align:center">
+<span style=3D"mso-bookmark:x__Hlk54964011"><b><span style=3D"font-size:10.=
+0pt;font-family:&quot;Helvetica&quot;,sans-serif">Fax: 855-588-0601</span><=
+/b><o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" align=3D"center" style=3D"margin-left:0in;te=
+xt-align:center">
+<span style=3D"mso-bookmark:x__Hlk54964011"><b><span style=3D"font-size:10.=
+0pt;font-family:&quot;Helvetica&quot;,sans-serif">Email:
+</span></b></span><a href=3D"mailto:insurance@capitalone.com"><span style=
+=3D"mso-bookmark:x__Hlk54964011"><b><span style=3D"font-size:10.0pt;font-fa=
+mily:&quot;Helvetica&quot;,sans-serif">insurance@capitalone.com</span></b><=
+/span><span style=3D"mso-bookmark:x__Hlk54964011"></span></a><span style=3D=
+"mso-bookmark:x__Hlk54964011"><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in;text-align:justify"=
+><span style=3D"mso-bookmark:x__Hlk54964011"><span style=3D"font-size:10.0p=
+t;font-family:&quot;Helvetica&quot;,sans-serif">Thank you in advance for pr=
+oviding the required revisions to the existing coverage.
+ If you have any questions or concerns regarding the non-compliant coverage=
+s, please feel free to contact us. If you have already provided the request=
+ed revisions, please disregard this letter.
+</span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsonormal" style=3D"text-align:justify"><span style=3D"mso-boo=
+kmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-family:&quot;Hel=
+vetica&quot;,sans-serif;color:black">Sincerely,</span><o:p></o:p></span></p=
+>
+<p class=3D"xmsonormal" style=3D"text-align:justify"><span style=3D"mso-boo=
+kmark:x__Hlk54964011"><span style=3D"font-size:10.0pt;font-family:&quot;Hel=
+vetica&quot;,sans-serif;color:black">&nbsp;</span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011"><b><spa=
+n style=3D"font-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif;co=
+lor:black">Insurance Department</span></b><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011"><span s=
+tyle=3D"font-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Phon=
+e: 704-620-6625</span><o:p></o:p></span></p>
+<p class=3D"xmsonormal"><span style=3D"mso-bookmark:x__Hlk54964011">&nbsp;<=
+o:p></o:p></span></p>
+<p class=3D"xmsoheader" align=3D"center" style=3D"text-align:center"><span =
+style=3D"mso-bookmark:x__Hlk54964011"><b><span style=3D"font-family:&quot;A=
+rial&quot;,sans-serif">Capital One</span></b><o:p></o:p></span></p>
+<p class=3D"xmsoheader" align=3D"center" style=3D"text-align:center"><span =
+style=3D"mso-bookmark:x__Hlk54964011"><b><span style=3D"font-family:&quot;A=
+rial&quot;,sans-serif">INSURANCE COMPLIANCE REVIEW</span></b></span><o:p></=
+o:p></p>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Property:
+<span style=3D"color:black">The Centre at Silver Spring (fka Knights Bridge=
+ I Apartments)</span></span><o:p></o:p></p>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Loan Number:
+<span style=3D"color:black">502111095</span></span><o:p></o:p></p>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Type of Coverag=
+e:
+<span style=3D"color:black">Property / Liability</span></span><o:p></o:p></=
+p>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Policy Period:
+<span style=3D"color:black">01/05/2026 - 01/05/2027</span></span><o:p></o:p=
+></p>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in;text-align:justify"=
+><span style=3D"font-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-ser=
+if">The following issues must be addressed:
+</span><o:p></o:p></p>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td width=3D"774" colspan=3D"6" valign=3D"top" style=3D"width:580.5pt;borde=
+r:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Property 001 : The Centre at Silver Spring (f=
+ka Knights Bridge I Apartments), 3310 Teagarden Circle, Silver Spring, MD 2=
+0904</span></b><o:p></o:p></p>
+</td>
+</tr>
+<tr>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border:solid windowt=
+ext 1.0pt;border-top:none;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Document</span></b><o:p></o:p></p>
+</td>
+<td width=3D"129" valign=3D"top" style=3D"width:96.75pt;border-top:none;bor=
+der-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windo=
+wtext 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Details</span></b><o:p></o:p></p>
+</td>
+<td width=3D"129" valign=3D"top" style=3D"width:96.75pt;border-top:none;bor=
+der-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windo=
+wtext 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Requirement</span></b><o:p></o:p></p>
+</td>
+<td width=3D"144" valign=3D"top" style=3D"width:1.5in;border-top:none;borde=
+r-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowt=
+ext 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Current</span></b><o:p></o:p></p>
+</td>
+<td width=3D"129" valign=3D"top" style=3D"width:96.75pt;border-top:none;bor=
+der-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windo=
+wtext 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Deficiency</span></b><o:p></o:p></p>
+</td>
+<td width=3D"144" valign=3D"top" style=3D"width:1.5in;border-top:none;borde=
+r-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowt=
+ext 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsonormal"><b><span style=3D"font-size:10.0pt;font-family:&quo=
+t;Helvetica&quot;,sans-serif">Required</span></b><o:p></o:p></p>
+</td>
+</tr>
+<tr>
+<td width=3D"60" valign=3D"top" style=3D"width:45.0pt;border:solid windowte=
+xt 1.0pt;border-top:none;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">ACORD 28 Dated =
+01/02/2026</span><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Policy# TR00926=
+892026</span><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Full Policy Rec=
+eived Status</span><o:p></o:p></p>
+</td>
+<td width=3D"120" valign=3D"top" style=3D"width:1.25in;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Missing</span><=
+o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">A complete Full=
+ policy is required including all the forms and endorsement listed in the s=
+chedule</span><o:p></o:p></p>
+</td>
+<td width=3D"120" valign=3D"top" style=3D"width:1.25in;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Policy must be =
+provided within 90 days of policy renewal date</span><o:p></o:p></p>
+</td>
+</tr>
+<tr>
+<td width=3D"60" valign=3D"top" style=3D"width:45.0pt;border:solid windowte=
+xt 1.0pt;border-top:none;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">ACORD 28 Dated =
+01/02/2026</span><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Policy# ZJP41K2=
+6ANSV</span><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Full Policy Rec=
+eived Status</span><o:p></o:p></p>
+</td>
+<td width=3D"120" valign=3D"top" style=3D"width:1.25in;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Missing</span><=
+o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">A complete Full=
+ policy is required including all the forms and endorsement listed in the s=
+chedule</span><o:p></o:p></p>
+</td>
+<td width=3D"120" valign=3D"top" style=3D"width:1.25in;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Policy must be =
+provided within 90 days of policy renewal date</span><o:p></o:p></p>
+</td>
+</tr>
+<tr>
+<td width=3D"60" valign=3D"top" style=3D"width:45.0pt;border:solid windowte=
+xt 1.0pt;border-top:none;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">ACORD 28 Dated =
+01/02/2026</span><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Policy# TR00926=
+892026</span><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Ordinance or La=
+w Limit</span><o:p></o:p></p>
+</td>
+<td width=3D"120" valign=3D"top" style=3D"width:1.25in;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">$3,534,268</spa=
+n><o:p></o:p></p>
+</td>
+<td width=3D"100" valign=3D"top" style=3D"width:75.0pt;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">Limit is less t=
+han required</span><o:p></o:p></p>
+</td>
+<td width=3D"120" valign=3D"top" style=3D"width:1.25in;border-top:none;bord=
+er-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid window=
+text 1.0pt;padding:0in 5.4pt 0in 5.4pt">
+<p class=3D"xmsomessageheader" style=3D"margin-left:0in"><span style=3D"fon=
+t-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif">100% of Full Re=
+placement Cost</span><o:p></o:p></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class=3D"xmsonormal">&nbsp;<o:p></o:p></p>
+<p class=3D"xmsonormal" style=3D"margin-left:.5in;text-indent:.5in"><span s=
+tyle=3D"font-size:10.0pt;font-family:&quot;Helvetica&quot;,sans-serif;color=
+:black">&nbsp;</span><o:p></o:p></p>
+<p class=3D"xmsonormal"><span style=3D"font-family:&quot;Helvetica&quot;,sa=
+ns-serif;color:white">&nbsp;</span><o:p></o:p></p>
+</div>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<div class=3D"MsoNormal" align=3D"center" style=3D"text-align:center">
+<hr size=3D"2" width=3D"100%" align=3D"center">
+</div>
+<p class=3D"MsoNormal"><span style=3D"font-size:7.5pt;font-family:&quot;Ari=
+al&quot;,sans-serif;color:gray"><br>
+This message is for the designated recipient only and may contain privilege=
+d, proprietary, or otherwise private information. If you have received it i=
+n error, please notify the sender immediately and delete the original. Any =
+other use of the email by you is
+ prohibited.</span><o:p></o:p></p>
+</div>
+</div>
+</div>
+</body>
+</html>
+
+--_000_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_--
+
+--_004_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_
+Content-Type: image/png; name="image001.png"
+Content-Description: image001.png
+Content-Disposition: inline; filename="image001.png"; size=17501;
+	creation-date="Wed, 04 Feb 2026 13:47:00 GMT";
+	modification-date="Wed, 04 Feb 2026 13:47:00 GMT"
+Content-ID: <image001.png@01DC95B0.C34FC580>
+Content-Transfer-Encoding: base64
+
+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
+YII=
+
+--_004_CY8PR10MB7378D91070DF9C5E28DE38449298ACY8PR10MB7378namp_--
