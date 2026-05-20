@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parsed Emails — AcentoPartners</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:#3a86ff; --blue-dark:#2563eb; --green:#10b981; --red:#ef4444;
+      --orange:#f59e0b; --purple:#7c3aed;
+      --gray-50:#f8fafc; --gray-100:#f1f5f9; --gray-200:#e2e8f0;
+      --gray-400:#94a3b8; --gray-500:#64748b; --gray-700:#334155; --gray-900:#0f172a;
+      --radius:8px;
+      --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+      --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+    }
+    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--gray-100); color:var(--gray-900); min-height:100vh; }
+
+    /* Header / Nav */
+    header { background:var(--gray-900); color:#fff; padding:0 28px; height:56px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:100; box-shadow:var(--shadow); }
+    header h1 { font-size:1rem; font-weight:600; }
+    .nav-sep { color:#475569; }
+    .nav-link { font-size:.85rem; color:#94a3b8; text-decoration:none; padding:4px 10px; border-radius:6px; transition:all .15s; }
+    .nav-link:hover { color:#fff; background:#1e293b; }
+    .nav-link.active { color:#fff; background:#1e40af; }
+    .nav-spacer { flex:1; }
+    .badge { font-size:.7rem; background:var(--blue); padding:2px 10px; border-radius:20px; font-weight:500; }
+    /* User menu */
+    .user-menu { position:relative; }
+    .user-btn { display:flex; align-items:center; gap:8px; background:transparent; border:none; cursor:pointer; padding:5px 8px; border-radius:8px; color:#94a3b8; transition:all .15s; }
+    .user-btn:hover { background:#1e293b; color:#fff; }
+    .user-avatar { width:30px; height:30px; border-radius:50%; background:var(--blue); color:#fff; font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .user-name { font-size:.84rem; font-weight:500; }
+    .user-chevron { transition:transform .2s; }
+    .user-menu.open .user-chevron { transform:rotate(180deg); }
+    .user-dropdown { position:absolute; top:calc(100% + 8px); right:0; width:220px; background:#fff; border:1px solid var(--gray-200); border-radius:10px; box-shadow:var(--shadow-lg); overflow:hidden; opacity:0; pointer-events:none; transform:translateY(-6px); transition:opacity .15s,transform .15s; z-index:200; }
+    .user-menu.open .user-dropdown { opacity:1; pointer-events:all; transform:translateY(0); }
+    .user-info { padding:12px 14px; border-bottom:1px solid var(--gray-100); }
+    .user-info-name { font-size:.875rem; font-weight:600; color:var(--gray-900); }
+    .user-info-email { font-size:.75rem; color:var(--gray-400); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .dropdown-item { display:flex; align-items:center; gap:9px; padding:9px 14px; font-size:.84rem; color:var(--gray-700); text-decoration:none; transition:background .1s; cursor:pointer; background:none; border:none; width:100%; text-align:left; }
+    .dropdown-item:hover { background:var(--gray-50); }
+    .dropdown-item svg { flex-shrink:0; color:var(--gray-400); }
+    .dropdown-logout { color:var(--red); }
+    .dropdown-logout svg { color:var(--red); }
+    .dropdown-logout:hover { background:#fef2f2; }
+
+    /* Layout */
+    .page { max-width:1400px; margin:0 auto; padding:24px; }
+
+    /* Stats bar */
+    .stats-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px; }
+    .stat-card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow); }
+    .stat-label { font-size:.72rem; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:.04em; }
+    .stat-value { font-size:1.6rem; font-weight:700; margin-top:4px; color:var(--gray-900); }
+    .stat-sub { font-size:.75rem; color:var(--gray-400); margin-top:2px; }
+
+    /* Ingest panel */
+    .ingest-panel { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); padding:18px 20px; margin-bottom:20px; box-shadow:var(--shadow); }
+    .ingest-panel h3 { font-size:.9rem; font-weight:600; color:var(--gray-700); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .ingest-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+    .ingest-group { display:flex; flex-direction:column; gap:5px; }
+    .ingest-group label { font-size:.75rem; font-weight:600; color:var(--gray-500); }
+    .ingest-group input[type="text"], .ingest-group select { padding:7px 10px; border:1px solid var(--gray-200); border-radius:6px; font-size:.85rem; background:#fff; width:220px; }
+    .ingest-group input[type="text"]:focus, .ingest-group select:focus { outline:none; border-color:var(--blue); }
+    .ingest-divider { width:1px; background:var(--gray-200); align-self:stretch; margin:0 4px; }
+    .file-pick { display:flex; align-items:center; gap:8px; padding:7px 12px; border:1px dashed var(--gray-300); border-radius:6px; font-size:.84rem; color:var(--gray-500); background:#fafafa; cursor:pointer; transition:all .15s; min-width:240px; }
+    .file-pick:hover { border-color:var(--blue); color:var(--blue); background:#eff6ff; }
+    .file-pick-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px; }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius); font-size:.875rem; font-weight:500; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-primary { background:var(--blue); color:#fff; }
+    .btn-primary:hover:not(:disabled) { background:var(--blue-dark); }
+    .btn-outlook { background:#0078d4; color:#fff; }
+    .btn-outlook:hover:not(:disabled) { background:#106ebe; }
+    .btn-ghost { background:#fff; color:var(--gray-700); border:1px solid var(--gray-200); }
+    .btn-ghost:hover:not(:disabled) { background:var(--gray-50); }
+    .btn-icon { padding:6px; border-radius:6px; background:transparent; border:1px solid transparent; cursor:pointer; color:var(--gray-500); display:inline-flex; transition:all .15s; }
+    .btn-icon:hover { background:var(--gray-100); }
+    .btn-icon.view:hover { color:var(--blue); background:#eff6ff; border-color:#bfdbfe; }
+    .btn-icon.del:hover { color:var(--red); background:#fef2f2; border-color:#fecaca; }
+    .check-wrap { display:flex; align-items:center; gap:6px; font-size:.82rem; color:var(--gray-600); cursor:pointer; padding-top:20px; }
+    .check-wrap input { width:14px; height:14px; cursor:pointer; }
+
+    /* Toolbar */
+    .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .toolbar h2 { font-size:1rem; font-weight:600; flex:1; color:var(--gray-700); }
+    .filter-group { display:flex; gap:8px; }
+    .filter-select { padding:7px 10px; border:1px solid var(--gray-200); border-radius:6px; font-size:.82rem; background:#fff; }
+    .filter-select:focus { outline:none; border-color:var(--blue); }
+    .search-wrap { position:relative; }
+    .search-wrap input { padding:7px 10px 7px 32px; border:1px solid var(--gray-200); border-radius:6px; font-size:.82rem; width:220px; background:#fff; }
+    .search-wrap input:focus { outline:none; border-color:var(--blue); }
+    .search-icon { position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--gray-400); width:15px; height:15px; pointer-events:none; }
+
+    /* Grid */
+    .card { background:#fff; border-radius:var(--radius); border:1px solid var(--gray-200); box-shadow:var(--shadow); overflow:hidden; }
+    .grid-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.84rem; }
+    thead th { background:var(--gray-50); padding:10px 13px; text-align:left; font-size:.72rem; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--gray-200); white-space:nowrap; }
+    tbody tr { border-bottom:1px solid var(--gray-100); transition:background .1s; cursor:default; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--gray-50); }
+    td { padding:10px 13px; vertical-align:middle; }
+    .td-subject { max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+    .td-sender { max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.8rem; color:var(--gray-700); }
+    td.actions { text-align:right; white-space:nowrap; }
+    .empty-row td { text-align:center; padding:56px; color:var(--gray-400); }
+
+    /* Badges */
+    .badge-source { font-size:.72rem; padding:2px 8px; border-radius:20px; font-weight:600; }
+    .badge-file { background:#eff6ff; color:#2563eb; }
+    .badge-outlook { background:#ede9fe; color:#6d28d9; }
+    .badge-status { font-size:.72rem; padding:2px 8px; border-radius:20px; font-weight:600; }
+    .badge-pending { background:#fef9c3; color:#854d0e; }
+    .badge-classified { background:#dcfce7; color:#166534; }
+    .badge-processed { background:#dbeafe; color:#1e40af; }
+    .chip-wrap { display:flex; flex-wrap:wrap; gap:3px; max-width:180px; }
+    .chip { font-size:.7rem; padding:1px 6px; border-radius:20px; }
+    .chip-green { background:#f0fdf4; color:#16a34a; }
+
+    /* Pagination */
+    .pagination { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid var(--gray-100); font-size:.82rem; color:var(--gray-500); }
+    .page-btns { display:flex; gap:6px; }
+    .page-btn { padding:5px 12px; border:1px solid var(--gray-200); border-radius:6px; background:#fff; font-size:.82rem; cursor:pointer; }
+    .page-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .page-btn:hover:not(:disabled) { background:var(--gray-50); }
+
+    /* Modal / Drawer */
+    .overlay { position:fixed; inset:0; background:rgba(15,23,42,.4); z-index:200; display:flex; justify-content:flex-end; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .overlay.open { opacity:1; pointer-events:all; }
+    .drawer { width:520px; max-width:96vw; height:100vh; background:#fff; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .25s; overflow:hidden; }
+    .overlay.open .drawer { transform:translateX(0); }
+    .drawer-header { padding:18px 20px; border-bottom:1px solid var(--gray-200); display:flex; align-items:flex-start; gap:10px; flex-shrink:0; }
+    .drawer-header h3 { flex:1; font-size:.95rem; font-weight:600; line-height:1.4; }
+    .drawer-close { background:none; border:none; cursor:pointer; color:var(--gray-400); padding:4px; border-radius:4px; display:flex; flex-shrink:0; }
+    .drawer-close:hover { color:var(--gray-700); background:var(--gray-100); }
+    .drawer-body { flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
+    .meta-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .meta-item { display:flex; flex-direction:column; gap:2px; }
+    .meta-label { font-size:.7rem; font-weight:600; color:var(--gray-400); text-transform:uppercase; }
+    .meta-value { font-size:.84rem; color:var(--gray-900); }
+    .body-preview { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:6px; padding:12px; font-size:.8rem; line-height:1.6; color:var(--gray-700); white-space:pre-wrap; max-height:300px; overflow-y:auto; font-family:monospace; }
+    .body-clean   { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:12px; font-size:.82rem; line-height:1.65; color:#14532d; white-space:pre-wrap; max-height:300px; overflow-y:auto; }
+    .body-tabs { display:flex; gap:0; border:1px solid var(--gray-200); border-radius:6px; overflow:hidden; margin-bottom:4px; }
+    .body-tab { flex:1; padding:6px 12px; font-size:.76rem; font-weight:600; cursor:pointer; background:#fff; border:none; color:var(--gray-500); transition:all .15s; }
+    .body-tab.active { background:var(--blue); color:#fff; }
+    .body-tab:not(.active):hover { background:var(--gray-50); }
+    .section-sep { font-size:.72rem; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--gray-100); padding-bottom:6px; }
+
+    /* Result banner */
+    .result-banner { padding:12px 16px; border-radius:var(--radius); font-size:.85rem; margin-bottom:14px; display:none; }
+    .result-banner.ok { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
+    .result-banner.err { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+    .result-banner.show { display:block; }
+
+    /* Spinner */
+    .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+    .spin-dark { border-color:rgba(0,0,0,.15); border-top-color:var(--gray-700); }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; right:24px; z-index:999; padding:12px 18px; border-radius:var(--radius); font-size:.875rem; font-weight:500; color:#fff; box-shadow:var(--shadow-lg); transform:translateY(12px); opacity:0; transition:transform .25s,opacity .25s; pointer-events:none; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.ok { background:var(--green); }
+    .toast.err { background:var(--red); }
+  </style>
+</head>
+<body>
+
+<!-- Header with nav -->
+<header>
+  <h1>AcentoPartners</h1>
+  <span class="nav-sep">|</span>
+  <a href="/api/v1/emails/form" class="nav-link active">Parsed Emails</a>
+  <a href="/api/v1/lenders/form" class="nav-link">Lenders</a>
+  <div class="nav-spacer"></div>
+  <div class="user-menu" id="user-menu">
+    <button class="user-btn" onclick="toggleUserMenu()">
+      <div class="user-avatar">AP</div>
+      <span class="user-name">Admin</span>
+      <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="user-dropdown" id="user-dropdown">
+      <div class="user-info">
+        <div class="user-info-name">AcentoPartners</div>
+        <div class="user-info-email">lender-insurance@acentopartners.com</div>
+      </div>
+      <a class="dropdown-item" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Profile
+      </a>
+      <button class="dropdown-item dropdown-logout" onclick="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Stats bar -->
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Total Emails</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-sub">in parsed_emails</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value" id="stat-pending">—</div>
+      <div class="stat-sub">not yet classified</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Classified</div>
+      <div class="stat-value" id="stat-classified">—</div>
+      <div class="stat-sub">AI processed</div>
+    </div>
+  </div>
+
+  <!-- Ingest panel -->
+  <div class="ingest-panel">
+    <h3>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Ingest Emails
+    </h3>
+
+    <div id="ingest-result" class="result-banner"></div>
+
+    <div class="ingest-actions">
+      <!-- File upload -->
+      <div class="ingest-group">
+        <label>Upload .eml files</label>
+        <label class="file-pick" for="file-upload">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="file-pick-name" id="file-pick-label">Choose .eml files…</span>
+        </label>
+        <input type="file" id="file-upload" accept=".eml" multiple style="display:none" onchange="onFilesPicked()" />
+      </div>
+      <button class="btn btn-primary" id="btn-ingest-file" onclick="ingestFiles()" style="align-self:flex-end" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload & Ingest
+      </button>
+
+      <div class="ingest-divider"></div>
+
+      <!-- Outlook ingest -->
+      <div class="ingest-group">
+        <label>Month (optional)</label>
+        <select id="outlook-month">
+          <option value="">— current month —</option>
+          <option value="1">January</option><option value="2">February</option>
+          <option value="3">March</option><option value="4">April</option>
+          <option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="ingest-group">
+        <label>Year</label>
+        <input type="text" id="outlook-year" placeholder="2026" style="width:90px" />
+      </div>
+      <label class="check-wrap">
+        <input type="checkbox" id="outlook-all-dates" />
+        All dates
+      </label>
+      <button class="btn btn-outlook" id="btn-ingest-outlook" onclick="ingestOutlook()" style="align-self:flex-end">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Ingest from Outlook
+      </button>
+    </div>
+  </div>
+
+  <!-- Table toolbar -->
+  <div class="toolbar">
+    <h2 id="table-title">Emails</h2>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search" placeholder="Search subject, sender…" oninput="onFilter()" />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" id="filter-source" onchange="onFilter()">
+        <option value="">All sources</option>
+        <option value="file">File</option>
+        <option value="outlook">Outlook</option>
+      </select>
+      <select class="filter-select" id="filter-status" onchange="onFilter()">
+        <option value="">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="classified">Classified</option>
+        <option value="processed">Processed</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="refresh()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Grid -->
+  <div class="card">
+    <div class="grid-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Subject</th>
+            <th>Sender</th>
+            <th>To Domains</th>
+            <th>Received</th>
+            <th>Attachments</th>
+            <th>Status</th>
+            <th>Ingested</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="empty-row"><td colspan="9">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination" style="display:none">
+      <span id="page-info"></span>
+      <div class="page-btns">
+        <button class="page-btn" id="btn-prev" onclick="prevPage()">← Prev</button>
+        <button class="page-btn" id="btn-next" onclick="nextPage()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- Detail Drawer -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <h3 id="drawer-title">Email Detail</h3>
+      <button class="drawer-close" onclick="closeDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <p style="color:var(--gray-400)">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '/api/v1/emails';
+  const PAGE_SIZE = 50;
+  let currentOffset = 0;
+  let totalRows = 0;
+
+  // ── Boot ────────────────────────────────────────────────────────
+  async function boot() {
+    await Promise.all([loadStats(), loadEmails()]);
+  }
+
+  // ── Stats ───────────────────────────────────────────────────────
+  async function loadStats() {
+    const res = await fetch(`${API}/stats`);
+    if(!res.ok) return;
+    const d = await res.json();
+    setEl('stat-total',      d.total);
+    setEl('stat-pending',    d.by_status?.pending ?? 0);
+    setEl('stat-classified', d.by_status?.classified ?? 0);
+  }
+
+  // ── Table ───────────────────────────────────────────────────────
+  async function loadEmails() {
+    const search = document.getElementById('search').value.trim();
+    const source = document.getElementById('filter-source').value;
+    const status = document.getElementById('filter-status').value;
+
+    const params = new URLSearchParams({ limit: PAGE_SIZE, offset: currentOffset });
+    if(search) params.set('search', search);
+    if(source) params.set('source', source);
+    if(status) params.set('status', status);
+
+    const res = await fetch(`${API}?${params}`);
+    if(!res.ok) { renderEmpty('Error loading emails'); return; }
+    const d = await res.json();
+    totalRows = d.total;
+    renderTable(d.items);
+    renderPagination();
+    document.getElementById('table-title').textContent = `Emails (${totalRows})`;
+  }
+
+  function renderTable(items) {
+    const tbody = document.getElementById('table-body');
+    if(!items.length) { renderEmpty('No emails found.'); return; }
+
+    tbody.innerHTML = items.map(e => `
+      <tr>
+        <td><span class="badge-source badge-${e.source}">${e.source}</span></td>
+        <td class="td-subject" title="${esc(e.subject||'')}">${esc(e.subject||'(no subject)')}</td>
+        <td class="td-sender" title="${esc(e.sender||'')}">${esc(e.sender||'—')}</td>
+        <td><div class="chip-wrap">${(e.to_domains||[]).slice(0,3).map(d=>`<span class="chip chip-green">${esc(d)}</span>`).join('')}${e.to_domains?.length>3?`<span class="chip" style="background:var(--gray-100);color:var(--gray-500)">+${e.to_domains.length-3}</span>`:''}</div></td>
+        <td style="font-size:.8rem;color:var(--gray-500);white-space:nowrap">${fmtDate(e.received_date)}</td>
+        <td style="text-align:center">
+          ${e.has_attachments
+            ? `<span title="${(e.attachment_names||[]).join(', ')}" style="color:var(--orange)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+               </span>`
+            : '<span style="color:var(--gray-300)">—</span>'}
+        </td>
+        <td><span class="badge-status badge-${e.status||'pending'}">${e.status||'pending'}</span></td>
+        <td style="font-size:.78rem;color:var(--gray-400);white-space:nowrap">${fmtDate(e.ingested_at)}</td>
+        <td class="actions">
+          <button class="btn-icon view" title="View detail" onclick="openDrawer('${esc(e.id)}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn-icon del" title="Delete" onclick="deleteEmail('${esc(e.id)}','${esc(e.subject||'this email')}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function renderEmpty(msg) {
+    document.getElementById('table-body').innerHTML = `<tr class="empty-row"><td colspan="9">${esc(msg)}</td></tr>`;
+    document.getElementById('pagination').style.display = 'none';
+  }
+
+  function renderPagination() {
+    const pag = document.getElementById('pagination');
+    if(totalRows <= PAGE_SIZE) { pag.style.display='none'; return; }
+    pag.style.display = 'flex';
+    const page = Math.floor(currentOffset/PAGE_SIZE)+1;
+    const pages = Math.ceil(totalRows/PAGE_SIZE);
+    document.getElementById('page-info').textContent = `Page ${page} of ${pages} — ${totalRows} total`;
+    document.getElementById('btn-prev').disabled = currentOffset === 0;
+    document.getElementById('btn-next').disabled = currentOffset+PAGE_SIZE >= totalRows;
+  }
+
+  function prevPage() { if(currentOffset>0){ currentOffset=Math.max(0,currentOffset-PAGE_SIZE); loadEmails(); } }
+  function nextPage() { if(currentOffset+PAGE_SIZE<totalRows){ currentOffset+=PAGE_SIZE; loadEmails(); } }
+
+  let filterTimer;
+  function onFilter() { clearTimeout(filterTimer); filterTimer=setTimeout(()=>{ currentOffset=0; loadEmails(); },300); }
+  function refresh() { currentOffset=0; boot(); }
+
+  // ── Detail drawer ───────────────────────────────────────────────
+  async function openDrawer(id) {
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('drawer-title').textContent = 'Loading…';
+    document.getElementById('drawer-body').innerHTML = '<div style="display:flex;justify-content:center;padding:40px"><span class="spin spin-dark"></span></div>';
+
+    const res = await fetch(`${API}/${encodeURIComponent(id)}`);
+    if(!res.ok) { document.getElementById('drawer-body').innerHTML='<p style="color:var(--red)">Error loading email.</p>'; return; }
+    const e = await res.json();
+
+    document.getElementById('drawer-title').textContent = e.subject || '(no subject)';
+
+    const attachHTML = (e.attachment_names||[]).length
+      ? (e.attachment_names||[]).map(a=>`<span class="chip" style="background:#fef9c3;color:#854d0e">${esc(a)}</span>`).join(' ')
+      : '<span style="color:var(--gray-400)">None</span>';
+
+    document.getElementById('drawer-body').innerHTML = `
+      <div class="meta-row">
+        <div class="meta-item"><div class="meta-label">Source</div><div class="meta-value"><span class="badge-source badge-${e.source}">${e.source}</span></div></div>
+        <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value"><span class="badge-status badge-${e.status||'pending'}">${e.status||'pending'}</span></div></div>
+        <div class="meta-item"><div class="meta-label">Received</div><div class="meta-value" style="font-size:.8rem">${fmtDate(e.received_date,true)}</div></div>
+        <div class="meta-item"><div class="meta-label">Ingested</div><div class="meta-value" style="font-size:.8rem">${fmtDate(e.ingested_at,true)}</div></div>
+      </div>
+
+      <div class="section-sep">Routing</div>
+      <div class="meta-row">
+        <div class="meta-item" style="flex:1"><div class="meta-label">From</div><div class="meta-value">${esc(e.sender||'—')}</div></div>
+        <div class="meta-item" style="flex:1"><div class="meta-label">Domain</div><div class="meta-value">${esc(e.sender_domain||'—')}</div></div>
+      </div>
+      <div class="meta-item"><div class="meta-label">To</div><div class="meta-value" style="font-size:.8rem">${(e.to_recipients||[]).map(r=>`<div>${esc(r)}</div>`).join('')||'—'}</div></div>
+      ${(e.cc_recipients||[]).length?`<div class="meta-item"><div class="meta-label">CC</div><div class="meta-value" style="font-size:.8rem">${e.cc_recipients.map(r=>`<div>${esc(r)}</div>`).join('')}</div></div>`:''}
+      ${(e.to_domains||[]).length?`<div class="meta-item"><div class="meta-label">To Domains</div><div class="meta-value"><div class="chip-wrap">${e.to_domains.map(d=>`<span class="chip chip-green">${esc(d)}</span>`).join('')}</div></div></div>`:''}
+
+      <div class="section-sep">Attachments</div>
+      <div>${attachHTML}</div>
+
+      ${(e.body_text || e.body_clean) ? `
+      <div class="section-sep">Body</div>
+      <div class="body-tabs">
+        <button class="body-tab ${e.body_clean ? '' : 'active'}" id="tab-raw" onclick="showBodyTab('raw')">Raw / Preview</button>
+        <button class="body-tab ${e.body_clean ? 'active' : ''}" id="tab-clean" onclick="showBodyTab('clean')">Cleaned Text</button>
+      </div>
+      <div id="body-raw" style="display:${e.body_clean ? 'none' : 'block'}">
+        ${e.body_text
+          ? `<div class="body-preview">${esc(e.body_text.slice(0,2000))}${e.body_text.length>2000?'\n\n[truncated…]':''}</div>`
+          : '<p style="color:var(--gray-400);font-size:.82rem">No plain-text body available.</p>'}
+      </div>
+      <div id="body-clean" style="display:${e.body_clean ? 'block' : 'none'}">
+        ${e.body_clean
+          ? `<div class="body-clean">${esc(e.body_clean.slice(0,3000))}${e.body_clean.length>3000?'\n\n[truncated…]':''}</div>`
+          : '<p style="color:var(--gray-400);font-size:.82rem">No cleaned body available. Re-ingest this email to generate it.</p>'}
+      </div>` : ''}
+
+      <div class="section-sep">IDs</div>
+      <div class="meta-item"><div class="meta-label">Record ID</div><div class="meta-value" style="font-size:.75rem;font-family:monospace;word-break:break-all">${esc(e.id)}</div></div>
+      ${e.message_id?`<div class="meta-item"><div class="meta-label">Message-ID</div><div class="meta-value" style="font-size:.75rem;font-family:monospace;word-break:break-all">${esc(e.message_id)}</div></div>`:''}
+      ${e.filename?`<div class="meta-item"><div class="meta-label">Filename</div><div class="meta-value" style="font-size:.8rem">${esc(e.filename)}</div></div>`:''}
+    `;
+  }
+
+  function showBodyTab(tab) {
+    document.getElementById('body-raw').style.display   = tab === 'raw'   ? 'block' : 'none';
+    document.getElementById('body-clean').style.display = tab === 'clean' ? 'block' : 'none';
+    document.getElementById('tab-raw').classList.toggle('active',   tab === 'raw');
+    document.getElementById('tab-clean').classList.toggle('active', tab === 'clean');
+  }
+
+  function closeDrawer() { document.getElementById('overlay').classList.remove('open'); }
+  function overlayClick(e) { if(e.target===document.getElementById('overlay')) closeDrawer(); }
+
+  // ── Delete ──────────────────────────────────────────────────────
+  async function deleteEmail(id, subject) {
+    if(!confirm(`Delete email "${subject}"?`)) return;
+    const res = await fetch(`${API}/${encodeURIComponent(id)}`,{method:'DELETE'});
+    if(!res.ok) { toast('Delete failed','err'); return; }
+    toast('Email deleted','ok');
+    closeDrawer();
+    await boot();
+  }
+
+  // ── Ingest ──────────────────────────────────────────────────────
+  function onFilesPicked() {
+    const input = document.getElementById('file-upload');
+    const label = document.getElementById('file-pick-label');
+    const btn   = document.getElementById('btn-ingest-file');
+    const n = input.files.length;
+    if (n === 0) {
+      label.textContent = 'Choose .eml files…';
+      btn.disabled = true;
+    } else {
+      label.textContent = n === 1 ? input.files[0].name : `${n} files selected`;
+      btn.disabled = false;
+    }
+  }
+
+  async function ingestFiles() {
+    const input = document.getElementById('file-upload');
+    if (!input.files.length) return;
+    const btn = document.getElementById('btn-ingest-file');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Uploading…';
+
+    try {
+      const form = new FormData();
+      for (const f of input.files) form.append('files', f);
+
+      const res = await fetch(`${API}/upload-eml`, { method:'POST', body: form });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.detail || `HTTP ${res.status}`);
+      showBanner(`✓ ${d.inserted} inserted, ${d.duplicates} duplicates, ${d.errors} errors`, 'ok');
+      input.value = '';
+      onFilesPicked();
+      await boot();
+    } catch(e) {
+      showBanner(`✗ ${e.message}`, 'err');
+    } finally {
+      btn.disabled = !input.files.length;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload & Ingest';
+    }
+  }
+
+  async function ingestOutlook() {
+    const btn = document.getElementById('btn-ingest-outlook');
+    const monthVal = document.getElementById('outlook-month').value;
+    const yearVal  = document.getElementById('outlook-year').value.trim();
+    const allDates = document.getElementById('outlook-all-dates').checked;
+
+    const payload = { all_dates: allDates };
+    if(monthVal) payload.month = parseInt(monthVal);
+    if(yearVal)  payload.year  = parseInt(yearVal);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Connecting…';
+
+    try {
+      const res = await fetch(`${API}/ingest/outlook`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+      });
+      const d = await res.json();
+      if(!res.ok) throw new Error(d.detail||`HTTP ${res.status}`);
+      showBanner(`✓ Outlook ingest complete: ${d.inserted} inserted, ${d.duplicates} duplicates, ${d.errors} errors`, 'ok');
+      await boot();
+    } catch(e) {
+      showBanner(`✗ ${e.message}`, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Ingest from Outlook';
+    }
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────
+  function fmtDate(iso, full=false) {
+    if(!iso) return '—';
+    const d = new Date(iso);
+    if(isNaN(d)) return iso;
+    if(full) return d.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function setEl(id,v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+
+  function esc(s) {
+    return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showBanner(msg, type) {
+    const el = document.getElementById('ingest-result');
+    el.textContent = msg;
+    el.className = `result-banner ${type} show`;
+    setTimeout(()=>el.classList.remove('show'), 6000);
+  }
+
+  let toastTimer;
+  function toast(msg,type='ok') {
+    clearTimeout(toastTimer);
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.className=`toast ${type} show`;
+    toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
+  }
+
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
+
+  // ── User menu ───────────────────────────────────────────────────
+  function toggleUserMenu() {
+    document.getElementById('user-menu').classList.toggle('open');
+  }
+  function logout() {
+    if(confirm('Are you sure you want to log out?')) window.location.href = '/logout';
+  }
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('user-menu');
+    if(menu && !menu.contains(e.target)) menu.classList.remove('open');
+  });
+
+  boot();
+</script>
+</body>
+</html>

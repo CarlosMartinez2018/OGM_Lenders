@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lender Management — AcentoPartners</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:#3a86ff; --blue-dark:#2563eb; --green:#10b981; --red:#ef4444;
+      --gray-50:#f8fafc; --gray-100:#f1f5f9; --gray-200:#e2e8f0;
+      --gray-400:#94a3b8; --gray-500:#64748b; --gray-700:#334155; --gray-900:#0f172a;
+      --radius:8px;
+      --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+      --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+    }
+    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--gray-100); color:var(--gray-900); min-height:100vh; }
+
+    /* Header */
+    header { background:var(--gray-900); color:#fff; padding:0 28px; height:56px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:100; box-shadow:var(--shadow); }
+    header h1 { font-size:1rem; font-weight:600; }
+    .nav-sep { color:#475569; }
+    .nav-link { font-size:.85rem; color:#94a3b8; text-decoration:none; padding:4px 10px; border-radius:6px; transition:all .15s; }
+    .nav-link:hover { color:#fff; background:#1e293b; }
+    .nav-link.active { color:#fff; background:#1e40af; }
+    .nav-spacer { flex:1; }
+    .badge { font-size:.7rem; background:var(--blue); padding:2px 10px; border-radius:20px; font-weight:500; }
+    /* User menu */
+    .user-menu { position:relative; }
+    .user-btn { display:flex; align-items:center; gap:8px; background:transparent; border:none; cursor:pointer; padding:5px 8px; border-radius:8px; color:#94a3b8; transition:all .15s; }
+    .user-btn:hover { background:#1e293b; color:#fff; }
+    .user-avatar { width:30px; height:30px; border-radius:50%; background:var(--blue); color:#fff; font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .user-name { font-size:.84rem; font-weight:500; }
+    .user-chevron { transition:transform .2s; }
+    .user-menu.open .user-chevron { transform:rotate(180deg); }
+    .user-dropdown { position:absolute; top:calc(100% + 8px); right:0; width:220px; background:#fff; border:1px solid var(--gray-200); border-radius:10px; box-shadow:var(--shadow-lg); overflow:hidden; opacity:0; pointer-events:none; transform:translateY(-6px); transition:opacity .15s,transform .15s; z-index:200; }
+    .user-menu.open .user-dropdown { opacity:1; pointer-events:all; transform:translateY(0); }
+    .user-info { padding:12px 14px; border-bottom:1px solid var(--gray-100); }
+    .user-info-name { font-size:.875rem; font-weight:600; color:var(--gray-900); }
+    .user-info-email { font-size:.75rem; color:var(--gray-400); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .dropdown-item { display:flex; align-items:center; gap:9px; padding:9px 14px; font-size:.84rem; color:var(--gray-700); text-decoration:none; transition:background .1s; cursor:pointer; background:none; border:none; width:100%; text-align:left; }
+    .dropdown-item:hover { background:var(--gray-50); }
+    .dropdown-item svg { flex-shrink:0; color:var(--gray-400); }
+    .dropdown-logout { color:var(--red); }
+    .dropdown-logout svg { color:var(--red); }
+    .dropdown-logout:hover { background:#fef2f2; }
+
+    /* Page */
+    .page { max-width:1280px; margin:0 auto; padding:28px 24px; }
+
+    /* Toolbar */
+    .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .toolbar h2 { font-size:1.1rem; font-weight:600; flex:1; color:var(--gray-700); }
+    .search-wrap { position:relative; display:inline-flex; align-items:center; }
+    .search-wrap input { padding:8px 12px 8px 34px; border:1px solid var(--gray-200); border-radius:var(--radius); font-size:.875rem; width:230px; background:#fff; position:relative; }
+    .search-wrap input:focus { outline:none; border-color:var(--blue); }
+    .search-icon { position:absolute; left:10px; color:var(--gray-400); width:16px; height:16px; pointer-events:none; flex-shrink:0; }
+
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius); font-size:.875rem; font-weight:500; cursor:pointer; border:none; transition:background .15s,opacity .15s; white-space:nowrap; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-primary { background:var(--blue); color:#fff; }
+    .btn-primary:hover:not(:disabled) { background:var(--blue-dark); }
+    .btn-success { background:var(--green); color:#fff; }
+    .btn-success:hover:not(:disabled) { background:#059669; }
+    .btn-ghost { background:#fff; color:var(--gray-700); border:1px solid var(--gray-200); }
+    .btn-ghost:hover:not(:disabled) { background:var(--gray-50); }
+    .btn-danger { background:#fff; color:var(--red); border:1px solid #fecaca; }
+    .btn-danger:hover:not(:disabled) { background:#fef2f2; }
+    .btn-outline { background:#fff; color:var(--blue); border:1px solid #bfdbfe; }
+    .btn-outline:hover:not(:disabled) { background:#eff6ff; }
+    .btn-sm { padding:5px 10px; font-size:.8rem; }
+    .btn-icon { padding:6px; border-radius:6px; background:transparent; border:1px solid transparent; cursor:pointer; color:var(--gray-500); display:inline-flex; align-items:center; transition:all .15s; }
+    .btn-icon:hover { background:var(--gray-100); border-color:var(--gray-200); }
+    .btn-icon.edit:hover { color:var(--blue); border-color:#bfdbfe; background:#eff6ff; }
+    .btn-icon.del:hover { color:var(--red); border-color:#fecaca; background:#fef2f2; }
+
+    /* Grid card */
+    .card { background:#fff; border-radius:var(--radius); border:1px solid var(--gray-200); box-shadow:var(--shadow); overflow:hidden; }
+    .grid-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.875rem; }
+    thead th { background:var(--gray-50); padding:11px 14px; text-align:left; font-size:.72rem; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--gray-200); white-space:nowrap; }
+    tbody tr { border-bottom:1px solid var(--gray-100); transition:background .1s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--gray-50); }
+    td { padding:12px 14px; vertical-align:middle; }
+    .td-name { font-weight:600; max-width:200px; }
+    .td-contact { font-size:.82rem; color:var(--gray-700); }
+    .td-contact small { display:block; color:var(--gray-400); font-size:.75rem; }
+    td.actions { text-align:right; white-space:nowrap; }
+
+    .chip-wrap { display:flex; flex-wrap:wrap; gap:4px; max-width:200px; }
+    .chip { font-size:.72rem; padding:2px 8px; border-radius:20px; font-weight:500; white-space:nowrap; }
+    .chip-blue { background:#eff6ff; color:#2563eb; }
+    .chip-green { background:#f0fdf4; color:#16a34a; }
+    .chip-purple { background:#faf5ff; color:#7c3aed; }
+    .chip-more { background:var(--gray-100); color:var(--gray-500); }
+    .status-dot { display:inline-flex; align-items:center; gap:5px; font-size:.8rem; }
+    .dot { width:7px; height:7px; border-radius:50%; }
+    .dot-green { background:var(--green); }
+    .dot-gray { background:var(--gray-400); }
+    .empty-row td { text-align:center; padding:56px; color:var(--gray-400); }
+
+    /* Modal */
+    .overlay { position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:200; display:flex; align-items:flex-start; justify-content:center; padding:32px 16px; overflow-y:auto; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .overlay.open { opacity:1; pointer-events:all; }
+    .modal { background:#fff; border-radius:12px; width:100%; max-width:780px; box-shadow:var(--shadow-lg); transform:translateY(-12px); transition:transform .2s; }
+    .overlay.open .modal { transform:translateY(0); }
+    .modal-header { padding:20px 24px 16px; border-bottom:1px solid var(--gray-200); display:flex; align-items:center; gap:12px; }
+    .modal-header h3 { flex:1; font-size:1rem; font-weight:600; }
+    .modal-close { background:none; border:none; cursor:pointer; color:var(--gray-400); padding:4px; border-radius:4px; display:flex; }
+    .modal-close:hover { color:var(--gray-700); background:var(--gray-100); }
+    .modal-body { padding:20px 24px; display:flex; flex-direction:column; gap:18px; max-height:calc(100vh - 200px); overflow-y:auto; }
+    .modal-footer { padding:16px 24px; border-top:1px solid var(--gray-200); display:flex; gap:8px; align-items:center; }
+    .spacer { flex:1; }
+
+    /* Form fields */
+    .section-title { font-size:.72rem; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:.06em; padding-bottom:8px; border-bottom:1px solid var(--gray-100); }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .field-row.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+    .field { display:flex; flex-direction:column; gap:5px; }
+    .field.full { grid-column:1/-1; }
+    label { font-size:.78rem; font-weight:600; color:var(--gray-500); }
+    input[type="text"], input[type="email"], input[type="tel"], textarea, select {
+      padding:8px 12px; border:1px solid var(--gray-200); border-radius:6px;
+      font-size:.875rem; font-family:inherit; color:var(--gray-900);
+      transition:border-color .15s; background:#fff; width:100%;
+    }
+    input:focus, textarea:focus, select:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
+    textarea { resize:vertical; min-height:72px; line-height:1.5; }
+
+    /* Toggle */
+    .toggle-wrap { display:flex; align-items:center; gap:8px; }
+    .toggle { position:relative; width:38px; height:22px; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-track { position:absolute; inset:0; background:var(--gray-200); border-radius:22px; cursor:pointer; transition:background .2s; }
+    .toggle input:checked + .toggle-track { background:var(--green); }
+    .toggle-track::before { content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+    .toggle input:checked + .toggle-track::before { transform:translateX(16px); }
+
+    /* Tag input */
+    .tag-box { border:1px solid var(--gray-200); border-radius:6px; padding:6px 8px; display:flex; flex-wrap:wrap; gap:5px; cursor:text; min-height:40px; background:#fff; transition:border-color .15s; }
+    .tag-box:focus-within { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
+    .tag { display:inline-flex; align-items:center; gap:4px; font-size:.78rem; padding:2px 8px; border-radius:20px; font-weight:500; }
+    .tag.alias { background:#eff6ff; color:#2563eb; }
+    .tag.domain { background:#f0fdf4; color:#16a34a; }
+    .tag button { background:none; border:none; cursor:pointer; color:inherit; font-size:1rem; line-height:1; display:flex; align-items:center; padding:0; opacity:.7; }
+    .tag button:hover { opacity:1; }
+    .tag-input { border:none; outline:none; font-size:.875rem; min-width:100px; flex:1; padding:2px 4px; background:transparent; }
+
+    /* Waivers section */
+    .waivers-list { display:flex; flex-direction:column; gap:10px; }
+    .waiver-item { border:1px solid var(--gray-200); border-radius:8px; overflow:hidden; }
+    .waiver-item-header { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--gray-50); cursor:pointer; user-select:none; }
+    .waiver-item-header:hover { background:var(--gray-100); }
+    .waiver-item-title { flex:1; font-size:.875rem; font-weight:600; color:var(--gray-700); }
+    .waiver-item-title span { font-size:.75rem; color:var(--gray-400); font-weight:400; margin-left:6px; }
+    .waiver-chevron { color:var(--gray-400); transition:transform .2s; }
+    .waiver-item.open .waiver-chevron { transform:rotate(180deg); }
+    .waiver-body { display:none; padding:14px; border-top:1px solid var(--gray-200); }
+    .waiver-item.open .waiver-body { display:flex; flex-direction:column; gap:12px; }
+
+    /* Spinner */
+    .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; right:24px; z-index:999; padding:12px 18px; border-radius:var(--radius); font-size:.875rem; font-weight:500; color:#fff; box-shadow:var(--shadow-lg); transform:translateY(12px); opacity:0; transition:transform .25s,opacity .25s; pointer-events:none; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.ok { background:var(--green); }
+    .toast.err { background:var(--red); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>AcentoPartners</h1>
+  <span class="nav-sep">|</span>
+  <a href="/api/v1/emails/form" class="nav-link">Parsed Emails</a>
+  <a href="/api/v1/lenders/form" class="nav-link active">Lenders</a>
+  <div class="nav-spacer"></div>
+  <div class="user-menu" id="user-menu">
+    <button class="user-btn" onclick="toggleUserMenu()">
+      <div class="user-avatar">AP</div>
+      <span class="user-name">Admin</span>
+      <svg class="user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="user-dropdown" id="user-dropdown">
+      <div class="user-info">
+        <div class="user-info-name">AcentoPartners</div>
+        <div class="user-info-email">lender-insurance@acentopartners.com</div>
+      </div>
+      <a class="dropdown-item" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Profile
+      </a>
+      <button class="dropdown-item dropdown-logout" onclick="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <div class="toolbar">
+    <h2>Lenders</h2>
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search lenders…" oninput="filterTable()" />
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </div>
+    <button class="btn btn-primary" onclick="openModal(null)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Add Lender
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="grid-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Aliases</th>
+            <th>Domains</th>
+            <th>Waivers</th>
+            <th>Status</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="empty-row"><td colspan="8">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+
+    <div class="modal-header">
+      <h3 id="modal-title">Add Lender</h3>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Contact info -->
+      <div>
+        <div class="section-title" style="margin-bottom:12px">Lender Info</div>
+        <div class="field-row" style="gap:12px">
+          <div class="field full">
+            <label>Lender Name *</label>
+            <input type="text" id="f-name" placeholder="e.g. JLL (Insurance Servicing)" />
+          </div>
+          <div class="field">
+            <label>First Name</label>
+            <input type="text" id="f-first-name" placeholder="Contact first name" />
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <input type="text" id="f-last-name" placeholder="Contact last name" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="f-email" placeholder="contact@lender.com" />
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="tel" id="f-phone" placeholder="+1 (555) 000-0000" />
+          </div>
+          <div class="field full">
+            <label>Notes</label>
+            <textarea id="f-notes" placeholder="Internal notes about this lender…" style="min-height:56px"></textarea>
+          </div>
+          <div class="field full">
+            <label style="margin-bottom:6px">Active</label>
+            <label class="toggle-wrap">
+              <span class="toggle">
+                <input type="checkbox" id="f-active" checked />
+                <span class="toggle-track"></span>
+              </span>
+              <span id="active-label" style="font-size:.875rem;color:var(--gray-700)">Active</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aliases -->
+      <div>
+        <div class="section-title" style="margin-bottom:8px">Aliases</div>
+        <div class="tag-box" id="aliases-box" onclick="focusTag('alias-inp')">
+          <input class="tag-input" id="alias-inp" placeholder="Type alias + Enter (e.g. JLL, Jones Lang LaSalle)…"
+                 onkeydown="addTag(event,'alias-inp','aliases-box','alias')" />
+        </div>
+      </div>
+
+      <!-- Domains -->
+      <div>
+        <div class="section-title" style="margin-bottom:8px">Email Domains</div>
+        <div class="tag-box" id="domains-box" onclick="focusTag('domain-inp')">
+          <input class="tag-input" id="domain-inp" placeholder="Type domain + Enter (e.g. jll.com)…"
+                 onkeydown="addTag(event,'domain-inp','domains-box','domain')" />
+        </div>
+      </div>
+
+      <!-- Waivers -->
+      <div>
+        <div class="section-title" style="margin-bottom:10px">
+          Waivers
+          <button class="btn btn-outline btn-sm" style="float:right;margin-top:-2px" onclick="addWaiverBlock()">+ Add Waiver</button>
+        </div>
+        <div class="waivers-list" id="waivers-list">
+          <p id="no-waivers" style="font-size:.85rem;color:var(--gray-400)">No waivers added yet.</p>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="btn-save" onclick="saveLender()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <div class="spacer"></div>
+      <button class="btn btn-danger" id="btn-delete" onclick="deleteCurrent()" style="display:none">Delete Lender</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '/api/v1/lenders';
+  let allLenders = [];
+  let editingId  = null;
+  let waiverCount = 0;
+
+  // ── Boot ────────────────────────────────────────────────────────
+  async function loadLenders() {
+    const res = await fetch(API);
+    allLenders = res.ok ? await res.json() : [];
+    renderTable(allLenders);
+  }
+
+  // ── Table ───────────────────────────────────────────────────────
+  function renderTable(lenders) {
+    const tbody = document.getElementById('table-body');
+    if (!lenders.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No lenders yet. Use <strong>Add Lender</strong> to create one.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = lenders.map((l, i) => `
+      <tr>
+        <td style="color:var(--gray-400);font-size:.8rem">${i+1}</td>
+        <td class="td-name">${esc(l.name)}</td>
+        <td class="td-contact">
+          ${esc([l.first_name, l.last_name].filter(Boolean).join(' ')) || '—'}
+          <small>${esc(l.email || '')}</small>
+        </td>
+        <td><div class="chip-wrap">${chips(l.aliases,'chip-blue',3)}</div></td>
+        <td><div class="chip-wrap">${chips(l.domains,'chip-green',3)}</div></td>
+        <td><div class="chip-wrap">${chips(l.waivers.map(w=>w.waiver_type),'chip-purple',2)}</div></td>
+        <td>
+          <span class="status-dot">
+            <span class="dot ${l.is_active ? 'dot-green' : 'dot-gray'}"></span>
+            ${l.is_active ? 'Active' : 'Inactive'}
+          </span>
+        </td>
+        <td class="actions">
+          <button class="btn-icon edit" title="Edit" onclick="openModal(${l.id})">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon del" title="Delete" onclick="deleteById(${l.id},'${esc(l.name)}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function chips(items, cls, max) {
+    const shown = items.slice(0,max).map(v=>`<span class="chip ${cls}">${esc(v)}</span>`).join('');
+    const more  = items.length>max ? `<span class="chip chip-more">+${items.length-max}</span>` : '';
+    return shown+more;
+  }
+
+  function filterTable() {
+    const q = document.getElementById('search').value.toLowerCase();
+    renderTable(allLenders.filter(l =>
+      l.name.toLowerCase().includes(q) ||
+      (l.email||'').toLowerCase().includes(q) ||
+      [l.first_name,l.last_name].filter(Boolean).join(' ').toLowerCase().includes(q) ||
+      (l.aliases||[]).some(a=>a.toLowerCase().includes(q)) ||
+      (l.domains||[]).some(d=>d.toLowerCase().includes(q)) ||
+      (l.waivers||[]).some(w=>w.waiver_type.toLowerCase().includes(q))
+    ));
+  }
+
+  // ── Modal ───────────────────────────────────────────────────────
+  function openModal(id) {
+    editingId = id;
+    waiverCount = 0;
+    const l = id ? allLenders.find(x=>x.id===id) : null;
+
+    document.getElementById('modal-title').textContent = l ? 'Edit Lender' : 'Add Lender';
+    document.getElementById('btn-delete').style.display = l ? 'inline-flex' : 'none';
+
+    setVal('f-name',       l?.name ?? '');
+    setVal('f-first-name', l?.first_name ?? '');
+    setVal('f-last-name',  l?.last_name ?? '');
+    setVal('f-email',      l?.email ?? '');
+    setVal('f-phone',      l?.phone ?? '');
+    setVal('f-notes',      l?.notes ?? '');
+    document.getElementById('f-active').checked = l?.is_active ?? true;
+    updateActiveLabel();
+
+    fillTagBox('aliases-box','alias-inp', l?.aliases??[], 'alias');
+    fillTagBox('domains-box','domain-inp',l?.domains??[], 'domain');
+
+    // Waivers
+    const list = document.getElementById('waivers-list');
+    list.innerHTML = '<p id="no-waivers" style="font-size:.85rem;color:var(--gray-400)">No waivers added yet.</p>';
+    (l?.waivers??[]).forEach(w => addWaiverBlock(w));
+
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(()=>document.getElementById('f-name').focus(), 80);
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+    editingId = null;
+  }
+
+  function overlayClick(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+  function updateActiveLabel() {
+    const chk = document.getElementById('f-active');
+    document.getElementById('active-label').textContent = chk.checked ? 'Active' : 'Inactive';
+  }
+  document.getElementById('f-active').addEventListener('change', updateActiveLabel);
+
+  // ── Tag inputs ──────────────────────────────────────────────────
+  function fillTagBox(boxId, inputId, values, cls) {
+    const box = document.getElementById(boxId);
+    const inp = document.getElementById(inputId);
+    box.querySelectorAll('.tag').forEach(t=>t.remove());
+    values.forEach(v=>box.insertBefore(makeTag(v,cls), inp));
+  }
+
+  function makeTag(value, cls) {
+    const s = document.createElement('span');
+    s.className = `tag ${cls}`;
+    s.dataset.value = value;
+    s.innerHTML = `${esc(value)}<button type="button" onclick="this.parentElement.remove()">×</button>`;
+    return s;
+  }
+
+  function focusTag(id) { document.getElementById(id)?.focus(); }
+
+  function addTag(e, inputId, boxId, cls) {
+    if(e.key!=='Enter' && e.key!==',') return;
+    e.preventDefault();
+    const inp = document.getElementById(inputId);
+    const val = inp.value.trim().replace(/,$/, '');
+    if(!val) return;
+    document.getElementById(boxId).insertBefore(makeTag(val,cls), inp);
+    inp.value = '';
+  }
+
+  function getTags(boxId) {
+    return [...document.querySelectorAll(`#${boxId} .tag`)].map(t=>t.dataset.value);
+  }
+
+  // ── Waivers ─────────────────────────────────────────────────────
+  function addWaiverBlock(data) {
+    const n = ++waiverCount;
+    const noEl = document.getElementById('no-waivers');
+    if(noEl) noEl.remove();
+
+    const list = document.getElementById('waivers-list');
+    const div = document.createElement('div');
+    div.className = 'waiver-item open';
+    div.dataset.waiverN = n;
+    if(data?.id) div.dataset.waiverId = data.id;
+
+    const title = data?.waiver_type ? `<strong>${esc(data.waiver_type)}</strong>` : `<em>New Waiver</em>`;
+    div.innerHTML = `
+      <div class="waiver-item-header" onclick="toggleWaiver(this)">
+        <span class="waiver-item-title" id="waiver-title-${n}">${title} <span>#${n}</span></span>
+        <label class="toggle-wrap" onclick="event.stopPropagation()">
+          <span class="toggle">
+            <input type="checkbox" id="w${n}-active" ${(data?.is_active??true)?'checked':''} onchange="updateWaiverTitle(${n})">
+            <span class="toggle-track"></span>
+          </span>
+          <span style="font-size:.8rem;color:var(--gray-500)">${(data?.is_active??true)?'Active':'Inactive'}</span>
+        </label>
+        <button class="btn-icon del" title="Remove waiver" onclick="removeWaiver(this)" style="margin-left:4px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <svg class="waiver-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+      </div>
+      <div class="waiver-body">
+        <div class="field">
+          <label>Waiver Type *</label>
+          <input type="text" id="w${n}-type" value="${esc(data?.waiver_type??'')}" placeholder="e.g. Assault & Battery (A&B) sublimit" oninput="updateWaiverTitle(${n})" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Triggers</label>
+            <textarea id="w${n}-triggers">${esc(data?.triggers??'')}</textarea>
+          </div>
+          <div class="field">
+            <label>Evidence Required — Ops</label>
+            <textarea id="w${n}-evops">${esc(data?.evidence_required_ops??'')}</textarea>
+          </div>
+          <div class="field">
+            <label>Evidence Required — Insurance</label>
+            <textarea id="w${n}-evins">${esc(data?.evidence_required_insurance??'')}</textarea>
+          </div>
+          <div class="field">
+            <label>Documents Expected</label>
+            <textarea id="w${n}-docs">${esc(data?.documents_expected??'')}</textarea>
+          </div>
+          <div class="field">
+            <label>WaiverPack</label>
+            <textarea id="w${n}-pack">${esc(data?.waiver_pack??'')}</textarea>
+          </div>
+          <div class="field">
+            <label>Actions to Automate</label>
+            <textarea id="w${n}-actions">${esc(data?.actions_to_automate??'')}</textarea>
+          </div>
+        </div>
+      </div>`;
+    list.appendChild(div);
+  }
+
+  function toggleWaiver(header) {
+    header.parentElement.classList.toggle('open');
+  }
+
+  function removeWaiver(btn) {
+    const item = btn.closest('.waiver-item');
+    item.remove();
+    if(!document.querySelector('.waiver-item')) {
+      const list = document.getElementById('waivers-list');
+      list.innerHTML = '<p id="no-waivers" style="font-size:.85rem;color:var(--gray-400)">No waivers added yet.</p>';
+    }
+  }
+
+  function updateWaiverTitle(n) {
+    const typeEl = document.getElementById(`w${n}-type`);
+    const titleEl = document.getElementById(`waiver-title-${n}`);
+    const activeEl = document.getElementById(`w${n}-active`);
+    if(!typeEl || !titleEl) return;
+    const txt = typeEl.value.trim() || 'New Waiver';
+    titleEl.innerHTML = `<strong>${esc(txt)}</strong> <span>#${n}</span>`;
+    // Update toggle label
+    const lbl = activeEl?.closest('.toggle-wrap')?.querySelector('span:last-child');
+    if(lbl) lbl.textContent = activeEl?.checked ? 'Active' : 'Inactive';
+  }
+
+  function collectWaivers() {
+    return [...document.querySelectorAll('.waiver-item')].map(item => {
+      const n = item.dataset.waiverN;
+      return {
+        id:        item.dataset.waiverId ? parseInt(item.dataset.waiverId) : null,
+        waiver_type:                getV(`w${n}-type`),
+        triggers:                   getV(`w${n}-triggers`) || null,
+        evidence_required_ops:      getV(`w${n}-evops`)   || null,
+        evidence_required_insurance:getV(`w${n}-evins`)   || null,
+        documents_expected:         getV(`w${n}-docs`)    || null,
+        waiver_pack:                getV(`w${n}-pack`)    || null,
+        actions_to_automate:        getV(`w${n}-actions`) || null,
+        is_active: document.getElementById(`w${n}-active`)?.checked ?? true,
+      };
+    }).filter(w => w.waiver_type);
+  }
+
+  // ── Save ────────────────────────────────────────────────────────
+  async function saveLender() {
+    const name = getV('f-name');
+    if(!name) { toast('Lender name is required','err'); return; }
+
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Saving…';
+
+    const payload = {
+      name,
+      first_name: getV('f-first-name') || null,
+      last_name:  getV('f-last-name')  || null,
+      email:      getV('f-email')      || null,
+      phone:      getV('f-phone')      || null,
+      notes:      getV('f-notes')      || null,
+      is_active:  document.getElementById('f-active').checked,
+      aliases:    getTags('aliases-box'),
+      domains:    getTags('domains-box'),
+      waivers:    collectWaivers(),
+    };
+
+    const url    = editingId ? `${API}/${editingId}` : API;
+    const method = editingId ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.detail||`HTTP ${res.status}`); }
+      const saved = await res.json();
+      toast(`"${saved.name}" saved successfully`,'ok');
+      closeModal();
+      await loadLenders();
+    } catch(e) {
+      toast(e.message,'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  }
+
+  // ── Delete ──────────────────────────────────────────────────────
+  async function deleteCurrent() {
+    deleteById(editingId, getV('f-name'));
+  }
+
+  async function deleteById(id, name) {
+    if(!confirm(`Delete lender "${name}"?\nThis will also delete all aliases, domains, and waivers.`)) return;
+    const res = await fetch(`${API}/${id}`,{method:'DELETE'});
+    if(!res.ok) { toast('Delete failed','err'); return; }
+    toast(`"${name}" deleted`,'ok');
+    closeModal();
+    await loadLenders();
+  }
+
+  // ── Seed (kept for API use only, button removed) ────────────────
+  async function seedLenders() {
+    if(!confirm('Populate lenders from the built-in Knowledge Base?\nExisting lenders (same name) will be skipped.')) return;
+    try {
+      const res = await fetch(`${API}/seed`,{method:'POST'});
+      if(!res.ok) throw new Error('Seed failed');
+      const d = await res.json();
+      toast(`Seeded: ${d.inserted} added, ${d.skipped} skipped`,'ok');
+      await loadLenders();
+    } catch(e) {
+      toast(e.message,'err');
+    } finally {}
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────
+  function getV(id)       { return (document.getElementById(id)?.value ?? '').trim(); }
+  function setVal(id,v)   { const el=document.getElementById(id); if(el) el.value=v; }
+  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  let toastTimer;
+  function toast(msg,type='ok') {
+    clearTimeout(toastTimer);
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.className=`toast ${type} show`;
+    toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
+  }
+
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+  // ── User menu ───────────────────────────────────────────────────
+  function toggleUserMenu() {
+    document.getElementById('user-menu').classList.toggle('open');
+  }
+  function logout() {
+    if(confirm('Are you sure you want to log out?')) window.location.href = '/logout';
+  }
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('user-menu');
+    if(menu && !menu.contains(e.target)) menu.classList.remove('open');
+  });
+
+  loadLenders();
+</script>
+</body>
+</html>
