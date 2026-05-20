@@ -78,6 +78,8 @@ async def classify_single_email(
         waiver_pack=result.waiver_pack,
         actions_to_automate=result.actions_to_automate,
         raw_llm_response=result.reasoning,
+        communication_category=result.communication_category,
+        escalate_for_review=result.escalate_for_review,
         status="classified",
     )
 

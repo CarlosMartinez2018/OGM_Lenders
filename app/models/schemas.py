@@ -30,6 +30,8 @@ class ClassificationResult(BaseModel):
     confidence_score: float = Field(ge=0.0, le=1.0, description="Classification confidence 0-1")
     confidence_level: str = Field(description="high (>0.85), medium (0.60-0.85), low (<0.60)")
     secondary_issues: list[str] = Field(default=[], description="Additional waiver issues found in the email")
+    communication_category: Optional[str] = Field(None, description="LENDER_COMPLIANCE | LENDER_ALERT | WAIVER_REQUEST | COVENANT_BREACH | OPERATIONAL_WAIVER")
+    escalate_for_review: bool = Field(default=False, description="True when critical risk keywords detected or injection attempt flagged")
     required_evidence_ops: Optional[str] = Field(None, description="Evidence required from Operations")
     required_evidence_insurance: Optional[str] = Field(None, description="Evidence required for Insurance")
     documents_expected: Optional[str] = Field(None, description="Documents expected to resolve")

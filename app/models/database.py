@@ -37,6 +37,8 @@ class EmailClassification(Base):
     waiver_pack = Column(Text, nullable=True)
     actions_to_automate = Column(Text, nullable=True)
     raw_llm_response = Column(Text, nullable=True)
+    communication_category = Column(String, nullable=True)   # LENDER_COMPLIANCE | WAIVER_REQUEST | etc.
+    escalate_for_review = Column(Boolean, default=False)
 
     # Status tracking
     status = Column(String, default="classified")  # classified, reviewed, corrected, processed
@@ -148,6 +150,12 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
         await conn.execute(text(
             "ALTER TABLE parsed_emails ADD COLUMN IF NOT EXISTS body_clean TEXT"
+        ))
+        await conn.execute(text(
+            "ALTER TABLE email_classifications ADD COLUMN IF NOT EXISTS communication_category VARCHAR"
+        ))
+        await conn.execute(text(
+            "ALTER TABLE email_classifications ADD COLUMN IF NOT EXISTS escalate_for_review BOOLEAN DEFAULT FALSE"
         ))
 
 
