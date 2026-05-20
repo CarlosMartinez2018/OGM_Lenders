@@ -11,9 +11,11 @@ import {
   SparklesIcon,
   ArrowPathIcon,
   ClipboardDocumentCheckIcon,
+  DocumentArrowDownIcon,
+  PaperClipIcon,
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid'
-import { classificationsApi, lendersApi } from '../lib/api'
+import { classificationsApi, lendersApi, configApi } from '../lib/api'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Drawer from '../components/ui/Drawer'
@@ -276,11 +278,44 @@ function ClassificationDrawer({ open, onClose, item, onApprove, onCorrect, appro
         {fields.length > 0 && (
           <div className="space-y-3">
             {fields.map(f => (
-              <div key={f.label} className="rounded-lg border border-slate-200 px-4 py-3">
+              <div key={f.label} className="rounded-lg border border-slate-200 px-4 py-3 bg-white">
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">{f.label}</p>
                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{f.value}</p>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Attachments & Draft Response */}
+        {(c.suggested_attachments?.length > 0 || c.draft_response) && (
+          <div className="rounded-xl border border-indigo-100 divide-y divide-indigo-50 bg-indigo-50/30">
+            <div className="px-4 py-3 bg-indigo-50 rounded-t-xl flex items-center gap-2">
+              <PaperClipIcon className="w-4 h-4 text-indigo-500" />
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Adjuntos y Respuesta Propuesta</p>
+            </div>
+            
+            {c.suggested_attachments?.length > 0 && (
+              <div className="px-4 py-3">
+                <p className="text-xs text-slate-400 mb-2">Documentos adjuntos encontrados</p>
+                <div className="space-y-2">
+                  {c.suggested_attachments.map((path, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm bg-white p-2 rounded border border-indigo-100 text-indigo-700">
+                      <DocumentArrowDownIcon className="w-4 h-4 shrink-0 text-indigo-400" />
+                      <span className="truncate" title={path}>{path}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {c.draft_response && (
+              <div className="px-4 py-3">
+                <p className="text-xs text-slate-400 mb-2">Borrador de respuesta generado</p>
+                <div className="bg-white p-3 rounded border border-indigo-100">
+                  <p className="text-sm text-slate-700 whitespace-pre-wrap font-mono leading-relaxed">{c.draft_response}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -366,6 +401,27 @@ export default function ClassificationsPage() {
   const [correctionOpen, setCorrectionOpen] = useState(false)
   const [approving, setApproving] = useState(false)
   const [actionError, setActionError] = useState(null)
+  
+  // Config
+  const [config, setConfig] = useState({ document_base_path: '' })
+  const [configSaving, setConfigSaving] = useState(false)
+
+  // Load config
+  useEffect(() => {
+    configApi.get().then(setConfig).catch(() => {})
+  }, [])
+  
+  async function handleSaveConfig() {
+    setConfigSaving(true)
+    try {
+      const res = await configApi.update({ document_base_path: config.document_base_path })
+      setConfig(res)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setConfigSaving(false)
+    }
+  }
 
   // Load stats
   useEffect(() => {
@@ -517,6 +573,21 @@ export default function ClassificationsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map(s => <StatCard key={s.label} {...s} />)}
+      </div>
+
+      {/* Config Bar */}
+      <div className="flex items-center gap-3 bg-white border border-slate-200 p-3 rounded-xl">
+        <label className="text-sm font-medium text-slate-700 shrink-0">Ruta de Documentos PDF:</label>
+        <input 
+          type="text" 
+          value={config.document_base_path}
+          onChange={e => setConfig({...config, document_base_path: e.target.value})}
+          placeholder="Ej. C:\Users\Documentos\Waivers"
+          className="flex-1 min-w-0 rounded-md border border-slate-200 px-3 py-1.5 text-sm"
+        />
+        <Button size="sm" variant="secondary" loading={configSaving} onClick={handleSaveConfig}>
+          Guardar Ruta
+        </Button>
       </div>
 
       {/* Tabs */}

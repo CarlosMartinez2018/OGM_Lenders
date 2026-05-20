@@ -17,8 +17,36 @@ from app.models.schemas import (
 from app.services.email_parser.parser import parse_eml_file, scan_email_folder
 from app.services.classifier.llm_classifier import classifier
 from app.services.outlook.connector import outlook
+from app.core.config import settings
+import os
 
 logger = logging.getLogger(__name__)
+
+def find_attachments(lender: str, waiver: str, base_path: str) -> list[str]:
+    if not lender or not waiver or not base_path:
+        return []
+        
+    path = Path(base_path)
+    if not path.exists():
+        return []
+        
+    found = []
+    lender_lower = lender.lower()
+    for root, dirs, files in os.walk(path):
+        # Simplistic check: if lender name in folder path
+        if lender_lower in root.lower() or lender_lower in os.path.basename(root).lower():
+            for f in files:
+                if f.lower().endswith(".pdf"):
+                    found.append(os.path.join(root, f))
+    return found
+
+def generate_draft_response(lender: str, waiver: str, attachments: list[str]) -> str:
+    msg = f"Hello {lender or 'Team'},\n\nPlease find attached the requested documents for the {waiver or 'insurance'} waiver.\n"
+    if attachments:
+        atts = "\n- ".join([os.path.basename(a) for a in attachments])
+        msg += f"\nAttachments:\n- {atts}\n"
+    msg += "\nBest regards,\nAcentoPartners Insurance Team"
+    return msg
 
 
 async def classify_single_email(
@@ -56,6 +84,10 @@ async def classify_single_email(
     def strip_null(s: str | None) -> str | None:
         return s.replace("\x00", "") if s else None
 
+    # Attachments & Response logic
+    attachments = find_attachments(result.lender, result.waiver_type, settings.document_base_path)
+    draft_msg = generate_draft_response(result.lender, result.waiver_type, attachments)
+
     # Persist to database
     record = EmailClassification(
         source=email.source,
@@ -80,6 +112,8 @@ async def classify_single_email(
         raw_llm_response=result.reasoning,
         communication_category=result.communication_category,
         escalate_for_review=result.escalate_for_review,
+        suggested_attachments=attachments,
+        draft_response=draft_msg,
         status="classified",
     )
 
@@ -94,6 +128,8 @@ async def classify_single_email(
         subject=record.subject,
         sender=record.sender,
         classification=result,
+        suggested_attachments=record.suggested_attachments,
+        draft_response=record.draft_response,
         status=record.status,
         created_at=record.created_at,
     )

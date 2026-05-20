@@ -18,6 +18,11 @@ from app.services.classifier.llm_classifier import classifier
 from app.services.outlook.connector import outlook
 from app.services import orchestrator
 from app.core.knowledge_base import find_matching_entry, get_lender_names, get_waiver_types
+from app.core.config import settings
+from pydantic import BaseModel
+
+class ConfigUpdate(BaseModel):
+    document_base_path: str
 
 router = APIRouter()
 
@@ -40,6 +45,19 @@ async def health_check():
         },
         "outlook": outlook_status,
     }
+
+
+@router.get("/config")
+async def get_config():
+    """Get dynamic configurations."""
+    return {"document_base_path": settings.document_base_path}
+
+
+@router.post("/config")
+async def update_config(config: ConfigUpdate):
+    """Update dynamic configurations."""
+    settings.document_base_path = config.document_base_path
+    return {"status": "updated", "document_base_path": settings.document_base_path}
 
 
 # ----------------------------------------------------------------

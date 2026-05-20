@@ -48,6 +48,8 @@ class ClassificationResponse(BaseModel):
     subject: Optional[str] = None
     sender: Optional[str] = None
     classification: ClassificationResult
+    suggested_attachments: list[str] = []
+    draft_response: Optional[str] = None
     status: str
     created_at: datetime
 

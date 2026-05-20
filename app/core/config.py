@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     outlook_mailbox: str = ""
     outlook_poll_interval: int = 60
 
+    # Document Management
+    document_base_path: str = "./documentos"
+
     # Database
     database_url: str = "sqlite+aiosqlite:///./data/classifications.db"
 

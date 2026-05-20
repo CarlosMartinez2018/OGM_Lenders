@@ -39,6 +39,10 @@ class EmailClassification(Base):
     raw_llm_response = Column(Text, nullable=True)
     communication_category = Column(String, nullable=True)   # LENDER_COMPLIANCE | WAIVER_REQUEST | etc.
     escalate_for_review = Column(Boolean, default=False)
+    
+    # Attachments feature
+    suggested_attachments = Column(JSON, default=list) # List of matching PDF filenames
+    draft_response = Column(Text, nullable=True) # AI generated email reply
 
     # Status tracking
     status = Column(String, default="classified")  # classified, reviewed, corrected, processed
@@ -157,6 +161,21 @@ async def init_db():
         await conn.execute(text(
             "ALTER TABLE email_classifications ADD COLUMN IF NOT EXISTS escalate_for_review BOOLEAN DEFAULT FALSE"
         ))
+        
+        # We need to catch exceptions for JSON columns if they exist in SQLite (since IF NOT EXISTS isn't supported for ADD COLUMN in some dialects, but we try standard text).
+        try:
+            await conn.execute(text(
+                "ALTER TABLE email_classifications ADD COLUMN suggested_attachments JSON"
+            ))
+        except Exception:
+            pass
+            
+        try:
+            await conn.execute(text(
+                "ALTER TABLE email_classifications ADD COLUMN draft_response TEXT"
+            ))
+        except Exception:
+            pass
 
 
 async def get_session() -> AsyncSession:

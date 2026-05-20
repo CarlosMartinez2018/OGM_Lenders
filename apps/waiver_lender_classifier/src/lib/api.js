@@ -64,3 +64,9 @@ export const lendersApi = {
 export const healthApi = {
   check: () => request('/health'),
 }
+
+// ── Config ────────────────────────────────────────────────────────
+export const configApi = {
+  get: () => request('/config'),
+  update: (payload) => request('/config', { method: 'POST', body: JSON.stringify(payload) }),
+}
