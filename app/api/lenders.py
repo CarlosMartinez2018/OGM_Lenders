@@ -1,13 +1,18 @@
 """
 CRUD endpoints for Lender management.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from pathlib import Path
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from pydantic import BaseModel
 from typing import Optional
 
 from app.models.database import get_session, Lender, LenderAlias, LenderDomain, Waiver
+
+templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 router = APIRouter(prefix="/lenders", tags=["lenders"])
 
