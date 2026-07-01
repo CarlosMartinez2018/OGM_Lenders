@@ -4,6 +4,7 @@ import InboxPage from './pages/InboxPage'
 import ClassificationsPage from './pages/ClassificationsPage'
 import LendersPage from './pages/LendersPage'
 import DashboardPage from './pages/DashboardPage'
+import SharepointFilesPage from './pages/SharepointFilesPage'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="inbox" element={<InboxPage />} />
           <Route path="classifications" element={<ClassificationsPage />} />
           <Route path="lenders" element={<LendersPage />} />
+          <Route path="sharepoint" element={<SharepointFilesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

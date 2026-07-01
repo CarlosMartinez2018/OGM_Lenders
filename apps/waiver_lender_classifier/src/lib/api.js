@@ -60,6 +60,18 @@ export const lendersApi = {
   lendersAndWaivers: () => request('/lenders-and-waivers'),
 }
 
+// ── SharePoint ────────────────────────────────────────────────────
+export const sharepointApi = {
+  drives: () => request('/sharepoint/drives'),
+  list: (params = {}) => {
+    const q = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+    ).toString()
+    return request(`/sharepoint/files${q ? `?${q}` : ''}`)
+  },
+  sync: () => request('/sharepoint/sync', { method: 'POST' }),
+}
+
 // ── Health ────────────────────────────────────────────────────────
 export const healthApi = {
   check: () => request('/health'),

@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     outlook_mailbox: str = ""
     outlook_poll_interval: int = 60
 
+    # SharePoint (uses the same Azure app credentials above; requires
+    # Sites.Read.All Application permission with admin consent in the
+    # tenant that owns the site).
+    sharepoint_hostname: str = "finesa.sharepoint.com"
+    sharepoint_site_path: str = "/sites/AndexInsurance"
+
     # Document Management
     document_base_path: str = "./documentos"
 

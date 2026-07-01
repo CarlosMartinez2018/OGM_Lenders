@@ -5,13 +5,15 @@ import {
   SparklesIcon,
   BuildingLibraryIcon,
   Cog6ToothIcon,
+  FolderIcon,
 } from '@heroicons/react/24/outline'
 
 const NAV = [
-  { to: '/dashboard',       label: 'Dashboard',        icon: ChartBarIcon },
+  { to: '/dashboard',       label: 'Dashboard',          icon: ChartBarIcon },
   { to: '/inbox',           label: 'Bandeja de Entrada', icon: InboxIcon },
-  { to: '/classifications', label: 'Análisis IA',       icon: SparklesIcon },
-  { to: '/lenders',         label: 'Lenders',           icon: BuildingLibraryIcon },
+  { to: '/classifications', label: 'Análisis IA',        icon: SparklesIcon },
+  { to: '/lenders',         label: 'Lenders',            icon: BuildingLibraryIcon },
+  { to: '/sharepoint',      label: 'SharePoint',         icon: FolderIcon },
 ]
 
 export default function Sidebar() {

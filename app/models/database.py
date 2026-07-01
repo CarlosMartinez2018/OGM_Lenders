@@ -145,6 +145,27 @@ class Waiver(Base):
     lender = relationship("Lender", back_populates="waivers")
 
 
+class SharePointFile(Base):
+    __tablename__ = "sharepoint_files"
+
+    id              = Column(String, primary_key=True)
+    drive_id        = Column(String, nullable=False, index=True)
+    drive_name      = Column(String, nullable=False, index=True)
+    name            = Column(String, nullable=False, index=True)
+    path            = Column(String, nullable=False)
+    parent_path     = Column(String, nullable=True)
+    is_folder       = Column(Boolean, default=False, nullable=False)
+    size            = Column(Integer, nullable=True)
+    mime_type       = Column(String, nullable=True)
+    file_extension  = Column(String, nullable=True, index=True)
+    web_url         = Column(String, nullable=True)
+    sp_created_at   = Column(DateTime(timezone=True), nullable=True)
+    sp_modified_at  = Column(DateTime(timezone=True), nullable=True)
+    last_synced_at  = Column(DateTime(timezone=True),
+                             default=lambda: datetime.now(timezone.utc),
+                             onupdate=lambda: datetime.now(timezone.utc))
+
+
 engine = create_async_engine(settings.database_url, echo=settings.debug)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 

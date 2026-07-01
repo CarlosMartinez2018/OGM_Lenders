@@ -13,6 +13,7 @@ from app.models.database import init_db
 from app.api.routes import router
 from app.api.lenders import router as lenders_router
 from app.api.emails import router as emails_router
+from app.api.sharepoint import router as sharepoint_router
 
 # Configure logging
 logging.basicConfig(
@@ -78,6 +79,7 @@ app.add_middleware(
 app.include_router(router, prefix="/api/v1")
 app.include_router(lenders_router, prefix="/api/v1")
 app.include_router(emails_router, prefix="/api/v1")
+app.include_router(sharepoint_router, prefix="/api/v1")
 
 
 @app.get("/")
