@@ -241,12 +241,6 @@ async def main(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     db_display = settings.database_url.split("@")[-1] if "@" in settings.database_url else settings.database_url
-    if "sqlite" in settings.database_url:
-        console.print(
-            "\n[bold yellow]Warning:[/bold yellow] DATABASE_URL apunta a SQLite, no PostgreSQL.\n"
-            "Actualiza DATABASE_URL en tu .env file.\n"
-        )
-
     engine = create_async_engine(settings.database_url, echo=False)
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 

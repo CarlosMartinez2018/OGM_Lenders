@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, DateTime, Text, Integer, JSON, Boolean, ForeignKey, UniqueConstraint, text
+from sqlalchemy import Column, String, Float, DateTime, Text, Integer, JSON, Boolean, ForeignKey, UniqueConstraint, text, MetaData
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, relationship
 from datetime import datetime, timezone
@@ -6,8 +6,11 @@ from app.core.config import settings
 import uuid
 
 
+SCHEMA_NAME = "lenders"
+
+
 class Base(DeclarativeBase):
-    pass
+    metadata = MetaData(schema=SCHEMA_NAME)
 
 
 class EmailClassification(Base):
@@ -105,10 +108,10 @@ class Lender(Base):
 
 class LenderAlias(Base):
     __tablename__ = "lender_aliases"
-    __table_args__ = (UniqueConstraint("lender_id", "alias"),)
+    __table_args__ = (UniqueConstraint("lender_id", "alias"), {"schema": SCHEMA_NAME})
 
     id        = Column(Integer, primary_key=True, autoincrement=True)
-    lender_id = Column(Integer, ForeignKey("lenders.id", ondelete="CASCADE"), nullable=False)
+    lender_id = Column(Integer, ForeignKey(f"{SCHEMA_NAME}.lenders.id", ondelete="CASCADE"), nullable=False)
     alias     = Column(String(255), nullable=False)
 
     lender = relationship("Lender", back_populates="aliases")
@@ -118,7 +121,7 @@ class LenderDomain(Base):
     __tablename__ = "lender_domains"
 
     id        = Column(Integer, primary_key=True, autoincrement=True)
-    lender_id = Column(Integer, ForeignKey("lenders.id", ondelete="CASCADE"), nullable=False)
+    lender_id = Column(Integer, ForeignKey(f"{SCHEMA_NAME}.lenders.id", ondelete="CASCADE"), nullable=False)
     domain    = Column(String(255), nullable=False, unique=True)
 
     lender = relationship("Lender", back_populates="domains")
@@ -126,10 +129,10 @@ class LenderDomain(Base):
 
 class Waiver(Base):
     __tablename__ = "waivers"
-    __table_args__ = (UniqueConstraint("lender_id", "waiver_type"),)
+    __table_args__ = (UniqueConstraint("lender_id", "waiver_type"), {"schema": SCHEMA_NAME})
 
     id                          = Column(Integer, primary_key=True, autoincrement=True)
-    lender_id                   = Column(Integer, ForeignKey("lenders.id", ondelete="CASCADE"), nullable=False)
+    lender_id                   = Column(Integer, ForeignKey(f"{SCHEMA_NAME}.lenders.id", ondelete="CASCADE"), nullable=False)
     waiver_type                 = Column(String(255), nullable=False)
     triggers                    = Column(Text, nullable=True)
     evidence_required_ops       = Column(Text, nullable=True)
@@ -145,37 +148,52 @@ class Waiver(Base):
     lender = relationship("Lender", back_populates="waivers")
 
 
-engine = create_async_engine(settings.database_url, echo=settings.debug)
+engine = create_async_engine(
+    settings.database_url,
+    echo=settings.debug,
+    connect_args={"prepared_statement_cache_size": 0},
+)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def init_db():
     async with engine.begin() as conn:
+        # Create the dedicated schema if it doesn't exist
+        await conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
         await conn.run_sync(Base.metadata.create_all)
         await conn.execute(text(
-            "ALTER TABLE parsed_emails ADD COLUMN IF NOT EXISTS body_clean TEXT"
+            f"ALTER TABLE {SCHEMA_NAME}.parsed_emails ADD COLUMN IF NOT EXISTS body_clean TEXT"
         ))
         await conn.execute(text(
-            "ALTER TABLE email_classifications ADD COLUMN IF NOT EXISTS communication_category VARCHAR"
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS communication_category VARCHAR"
         ))
         await conn.execute(text(
-            "ALTER TABLE email_classifications ADD COLUMN IF NOT EXISTS escalate_for_review BOOLEAN DEFAULT FALSE"
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS escalate_for_review BOOLEAN DEFAULT FALSE"
+        ))
+        # Status-tracking columns (added after initial table creation)
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS status VARCHAR DEFAULT 'classified'"
+        ))
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS reviewed_by VARCHAR"
+        ))
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS corrected_lender VARCHAR"
+        ))
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS corrected_waiver_type VARCHAR"
+        ))
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS correction_notes TEXT"
         ))
         
-        # We need to catch exceptions for JSON columns if they exist in SQLite (since IF NOT EXISTS isn't supported for ADD COLUMN in some dialects, but we try standard text).
-        try:
-            await conn.execute(text(
-                "ALTER TABLE email_classifications ADD COLUMN suggested_attachments JSON"
-            ))
-        except Exception:
-            pass
-            
-        try:
-            await conn.execute(text(
-                "ALTER TABLE email_classifications ADD COLUMN draft_response TEXT"
-            ))
-        except Exception:
-            pass
+        # Add features columns if they do not exist
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS suggested_attachments JSON"
+        ))
+        await conn.execute(text(
+            f"ALTER TABLE {SCHEMA_NAME}.email_classifications ADD COLUMN IF NOT EXISTS draft_response TEXT"
+        ))
 
 
 async def get_session() -> AsyncSession:

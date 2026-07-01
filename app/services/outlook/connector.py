@@ -101,82 +101,91 @@ class OutlookConnector:
             f"/messages?$top={count}&$orderby=receivedDateTime desc"
             f"&$select={select_fields}"
         )
+        emails = []
+        next_url = url
         if filters:
-            url += "&$filter=" + " and ".join(filters)
+            next_url += "&$filter=" + " and ".join(filters)
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                url,
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                },
-                timeout=30.0,
-            )
-
-            if response.status_code != 200:
-                logger.error(f"Graph API error {response.status_code}: {response.text}")
-                raise ConnectionError(f"Graph API error: {response.status_code} - {response.text[:200]}")
-
-            data = response.json()
-            emails = []
-
-            for msg in data.get("value", []):
-                sender_data = msg.get("from", {}).get("emailAddress", {})
-                sender_email = sender_data.get("address", "")
-
-                to_recipients = [
-                    r["emailAddress"]["address"]
-                    for r in msg.get("toRecipients", [])
-                    if r.get("emailAddress", {}).get("address")
-                ]
-                cc_recipients = [
-                    r["emailAddress"]["address"]
-                    for r in msg.get("ccRecipients", [])
-                    if r.get("emailAddress", {}).get("address")
-                ]
-
-                def _domains(addrs: list[str]) -> list[str]:
-                    seen = []
-                    for a in addrs:
-                        if "@" in a:
-                            d = a.split("@")[1].lower()
-                            if d not in seen:
-                                seen.append(d)
-                    return seen
-
-                body_content = msg.get("body", {}).get("content", "")
-                body_type = msg.get("body", {}).get("contentType", "text")
-
-                received = None
-                if msg.get("receivedDateTime"):
-                    try:
-                        received = datetime.fromisoformat(
-                            msg["receivedDateTime"].replace("Z", "+00:00")
-                        )
-                    except (ValueError, TypeError):
-                        received = datetime.now(timezone.utc)
-
-                email = EmailData(
-                    source="outlook",
-                    message_id=msg.get("id", ""),
-                    subject=msg.get("subject", "(no subject)"),
-                    sender=sender_email,
-                    sender_domain=sender_email.split("@")[1] if "@" in sender_email else "",
-                    to_recipients=to_recipients,
-                    to_domains=_domains(to_recipients),
-                    cc_recipients=cc_recipients,
-                    cc_domains=_domains(cc_recipients),
-                    received_date=received,
-                    body_text=body_content if body_type == "text" else "",
-                    body_html=body_content if body_type == "html" else "",
-                    has_attachments=msg.get("hasAttachments", False),
+            while next_url and len(emails) < count:
+                response = await client.get(
+                    next_url,
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Content-Type": "application/json",
+                    },
+                    timeout=30.0,
                 )
 
-                if not email.body_text and email.body_html:
-                    email.body_text = email.body_html
+                if response.status_code != 200:
+                    logger.error(f"Graph API error {response.status_code}: {response.text}")
+                    raise ConnectionError(f"Graph API error: {response.status_code} - {response.text[:200]}")
 
-                emails.append(email)
+                data = response.json()
+                messages = data.get("value", [])
+                if not messages:
+                    break
+
+                for msg in messages:
+                    sender_data = msg.get("from", {}).get("emailAddress", {})
+                    sender_email = sender_data.get("address", "")
+
+                    to_recipients = [
+                        r["emailAddress"]["address"]
+                        for r in msg.get("toRecipients", [])
+                        if r.get("emailAddress", {}).get("address")
+                    ]
+                    cc_recipients = [
+                        r["emailAddress"]["address"]
+                        for r in msg.get("ccRecipients", [])
+                        if r.get("emailAddress", {}).get("address")
+                    ]
+
+                    def _domains(addrs: list[str]) -> list[str]:
+                        seen = []
+                        for a in addrs:
+                            if "@" in a:
+                                d = a.split("@")[1].lower()
+                                if d not in seen:
+                                    seen.append(d)
+                        return seen
+
+                    body_content = msg.get("body", {}).get("content", "")
+                    body_type = msg.get("body", {}).get("contentType", "text")
+
+                    received = None
+                    if msg.get("receivedDateTime"):
+                        try:
+                            received = datetime.fromisoformat(
+                                msg["receivedDateTime"].replace("Z", "+00:00")
+                            )
+                        except (ValueError, TypeError):
+                            received = datetime.now(timezone.utc)
+
+                    email = EmailData(
+                        source="outlook",
+                        message_id=msg.get("id", ""),
+                        subject=msg.get("subject", "(no subject)"),
+                        sender=sender_email,
+                        sender_domain=sender_email.split("@")[1] if "@" in sender_email else "",
+                        to_recipients=to_recipients,
+                        to_domains=_domains(to_recipients),
+                        cc_recipients=cc_recipients,
+                        cc_domains=_domains(cc_recipients),
+                        received_date=received,
+                        body_text=body_content if body_type == "text" else "",
+                        body_html=body_content if body_type == "html" else "",
+                        has_attachments=msg.get("hasAttachments", False),
+                    )
+
+                    if not email.body_text and email.body_html:
+                        email.body_text = email.body_html
+
+                    emails.append(email)
+                    if len(emails) >= count:
+                        break
+
+                next_url = data.get("@odata.nextLink")
 
             logger.info(f"Fetched {len(emails)} emails from {self.mailbox}/{folder}")
             return emails
