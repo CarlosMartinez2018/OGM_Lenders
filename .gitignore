@@ -1,1 +1,26 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+
+# Node.js
+node_modules/
+.vite/
+dist/
+
+# Application data
+data/
+documentos/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Meeting recordings
 REVISIÓN HIST. USUARIO AXA-20260316_172308-Meeting Recording.mp4

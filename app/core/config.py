@@ -27,9 +27,17 @@ class Settings(BaseSettings):
     document_base_path: str = "./documentos"
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./data/classifications.db"
+    postgres_host: str = "localhost"
+    postgres_port: int = 5432
+    postgres_db: str = "postgres"
+    postgres_user: str = "postgres"
+    postgres_password: str = "postgres"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    @property
+    def database_url(self) -> str:
+        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

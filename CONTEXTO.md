@@ -251,35 +251,32 @@ Se mostró un documento: **"AcentoPartners Microsoft Graph API Integration & Con
 
 ---
 
-## 11. Estado del Código en `temp_acento` (actualizado 2026-04-21)
+## 11. Estado del Proyecto (Actualizado Junio 2026)
 
-> ✅ **Proyecto sincronizado desde GitHub** (`CarlosMartinez2018/OGM_Lenders/acento-classifier_v2`)
+### Avances Recientes (Integración a `acento-classifier_v2`)
+Se ha llevado a cabo una refactorización importante integrando la lógica previamente aislada (de `Codigos2`) dentro de la estructura principal de `acento-classifier_v2` para mejorar la mantenibilidad y la orquestación del flujo end-to-end:
+- ✅ **Módulo de Parseo (`app/services/email_parser`)**: Lógica modular para extraer y limpiar correos, tanto desde archivos locales `.eml` como desde datos crudos.
+- ✅ **Módulo de Outlook (`app/services/outlook`)**: Gestión de la conexión y extracción de correos directamente desde la API para soportar el flujo en vivo.
+- ✅ **Exportación a Excel**: Capacidad incorporada para volcar el listado y resultados de los correos procesados en reportes tabulares `.xlsx` (vía pandas).
+- ✅ **Frontend Dashboard (`apps/waiver_lender_classifier`)**: Creación de la interfaz gráfica principal en React (Vite + Tailwind CSS) para visualizar la clasificación, el dashboard de métricas y la revisión de la cola de trabajo (Review Queue).
 
+### Estado de Componentes Principales
 | Componente | Estado | Notas |
 |-----------|--------|-------|
-| Backend API (FastAPI) | ✅ Completo | 362 líneas, 13 endpoints |
-| Knowledge Base | ✅ Completo | 11 entries, 9 lenders |
-| Email Parser (.eml) | ✅ Completo | parse_eml_file + parse_eml_bytes |
-| LLM Classifier (Ollama) | ✅ **REAL** | AsyncClient, llama3.1:8b, domain-aware |
-| Outlook Connector | ✅ Completo | Microsoft Graph API via MSAL + httpx |
-| Orchestrator | ✅ Completo | Single + batch + Outlook classification |
-| `__init__.py` files | ✅ Restaurados | Todos los packages tienen __init__.py |
-| Sample Emails (10) | ✅ Restaurados | 10 .eml de prueba en sample_emails/ |
-| Docker/CI/CD | ✅ Restaurado | Dockerfile + docker-compose.yml |
-| Backlog (Jira) | ✅ Nuevo | backlog/acento_backlog_jira.csv |
-| Frontend (React) | ❌ Pendiente | No incluido en el repo |
-| Tests | ❌ Pendiente | pytest configurado pero sin tests |
-| .env.example | ❌ Pendiente | No incluido en el repo |
+| Extracción y Parseo de Emails | ✅ Integrado | Módulos `email_parser` y `outlook` en `app/services/` |
+| Exportación a Excel | ✅ Completo | Reportes de resultados para QA listos |
+| Backend API (FastAPI) | ✅ Completo | API funcional con endpoints unificados |
+| LLM Classifier (Ollama) | ✅ REAL | AsyncClient, llama3.1:8b, domain-aware |
+| Frontend (React) | ✅ Creado | Proyecto base en `apps/waiver_lender_classifier` |
+| Tests Unitarios/Integración | ❌ Pendiente | `pytest` configurado pero faltan pruebas exhaustivas |
+| Orquestación E2E | 🟡 En Progreso | Conectar UI, backend y flujos de revisión de manera robusta |
 
 ---
 
-## 12. Próximos Pasos
+## 12. Próximos Pasos (Lo que falta)
 
-1. **Crear `.env`** con configuración local (Ollama URL, modelo, paths)
-2. **Instalar dependencias** (`pip install -r requirements.txt`)
-3. **Instalar y configurar Ollama** con modelo `llama3.1:8b`
-4. **Ejecutar el servidor** (`uvicorn app.main:app --reload`)
-5. **Probar con sample_emails** (batch classification)
-6. **Construir frontend React** dashboard
-7. **Implementar Microsoft Graph API** integration (Phase 2)
-8. **Agregar tests** unitarios y de integración
+1. **Conexión Final Frontend-Backend**: Asegurar que todos los endpoints de FastAPI (`/api/v1/...`) sean consumidos correctamente desde la interfaz React.
+2. **Agregar Tests**: Desarrollar pruebas unitarias y de integración para validar la fiabilidad de la extracción, parseo y el motor del LLM.
+3. **Pruebas End-to-End en Vivo**: Probar todo el flujo continuo en ambiente real: Extracción de API -> Parseo -> Clasificación Ollama -> Presentación UI -> Aprobación Humana.
+4. **Fases de Retrieval & Assembly (Phase 3 y 4)**: Iniciar las integraciones con SharePoint/OneDrive para la recuperación de pólizas y el ensamblaje de los WaiverPacks.
+5. **Despliegue y Productización**: Preparar contenedores (Docker) y configuraciones para despliegue de componentes y el modelo LLM en host remoto.

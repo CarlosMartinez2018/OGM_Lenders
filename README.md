@@ -1,142 +1,122 @@
-<<<<<<< HEAD
 # AcentoPartners Email Classifier
 
 AI-powered email classification system for AcentoPartners. Classifies incoming lender/bank emails by **Lender** and **Waiver Type** using a local LLM (Ollama) with a RAG-based knowledge base.
 
 ## Architecture
 
+```text
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Email Sources   │     │   FastAPI          │     │   Ollama LLM    │
+│                  │────▶│   :8000            │────▶│  (llama3.1:8b)  │
+│ • .eml folder    │     │                  │◀────│  JSON response  │
+│ • Outlook/Graph  │     │ + Knowledge Base  │     │                 │
+│ • Upload API     │     │   (RAG)           │     └─────────────────┘
+└─────────────────┘     └────────┬─────────┘
+                                  │ proxy /api
+                         ┌────────▼─────────┐
+                         │  React Frontend   │
+                         │     :5173         │
+                         └──────────────────┘
+                                  │
+                         ┌────────▼─────────┐
+                         │   PostgreSQL DB   │
+                         └──────────────────┘
 ```
-┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Email Sources   │     │   FastAPI     │     │   Ollama LLM    │
-│                  │────▶│   Server      │────▶│  (llama3.1:8b)  │
-│ • .eml folder    │     │              │     │                 │
-│ • Outlook/Graph  │     │ + Knowledge  │◀────│  JSON response  │
-│ • Upload API     │     │   Base (RAG) │     │                 │
-└─────────────────┘     └──────┬───────┘     └─────────────────┘
-                               │
-                        ┌──────▼───────┐
-                        │   SQLite DB   │
-                        │ classifications│
-                        └──────────────┘
-```
+
+---
+
+## URLs de acceso
+
+| Servicio | URL | Descripción |
+| --- | --- | --- |
+| **Frontend React** | `http://localhost:5173` | Interfaz principal (inicio aquí) |
+| **Backend API** | `http://localhost:8000` | FastAPI server |
+| **Swagger UI** | `http://localhost:8000/docs` | Documentación interactiva |
+| **Emails UI** | `http://localhost:8000/api/v1/emails/form` | Vista HTML de emails |
+| **Lenders UI** | `http://localhost:8000/api/v1/lenders/form` | Vista HTML de lenders |
+
+> El frontend en `:5173` redirige automáticamente todas las llamadas `/api/...` al backend en `:8000`.
+
+---
 
 ## Quick Start
 
-### 1. Install Ollama & Pull Model
+### 1. Instalar Ollama y el modelo
 
 ```bash
-# Install Ollama (macOS)
-brew install ollama
+# Windows: descargar desde https://ollama.com/download
 
-# Install Ollama (Linux)
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Start Ollama server
+# Iniciar servidor Ollama
 ollama serve
 
-# Pull the model (in another terminal)
+# Descargar el modelo (en otra terminal)
 ollama pull llama3.1:8b
-
-# Alternative lighter model:
-# ollama pull mistral:7b
 ```
 
-### 2. Setup Project
+### 2. Configurar el proyecto
 
 ```bash
-# Clone/navigate to project
-cd acento-classifier
-
-# Create virtual environment
+# Crear entorno virtual
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate   # Windows
 
-# Install dependencies
+# Activar (Windows PowerShell)
+venv\Scripts\Activate.ps1
+
+# Instalar dependencias
 pip install -r requirements.txt
 
-# Copy environment config
-cp .env.example .env
-# Edit .env with your settings (Ollama URL, email paths, etc.)
+# Copiar y editar variables de entorno
+copy .env.example .env
+# Editar .env con tus credenciales (DB, Azure, Ollama URL, etc.)
 ```
 
-### 3. Run the Server
+### 3. Iniciar el Backend (FastAPI)
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open http://localhost:8000/docs for the interactive API docs (Swagger UI).
+Disponible en `http://localhost:8000`
 
-## Usage
-
-### Option A: Classify .eml Files from a Folder (Batch)
-
-Place your `.eml` files in the `sample_emails/` folder, then:
+### 4. Iniciar el Frontend (React)
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/classify/batch \
-  -H "Content-Type: application/json" \
-  -d '{"folder_path": "./sample_emails", "max_emails": 10}'
+cd apps\waiver_lender_classifier
+
+# Primera vez: instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
 ```
 
-### Option B: Upload a Single .eml File
+Disponible en **`http://localhost:5173`** — este es el punto de entrada principal.
 
-```bash
-curl -X POST http://localhost:8000/api/v1/classify/upload \
-  -F "file=@/path/to/email.eml"
-```
+---
 
-### Option C: Classify from Outlook (Microsoft Graph API)
+## Outlook Integration (Microsoft Graph API)
 
-First configure Azure AD credentials in `.env`, then:
+### Paso 1: Registrar la app en Azure Portal
 
-```bash
-# Test connection
-curl http://localhost:8000/api/v1/outlook/test
-
-# Classify recent emails
-curl -X POST http://localhost:8000/api/v1/classify/outlook \
-  -H "Content-Type: application/json" \
-  -d '{"num_emails": 5, "folder": "Inbox"}'
-```
-
-### View Results
-
-```bash
-# List all classifications
-curl http://localhost:8000/api/v1/classifications
-
-# Filter by lender
-curl "http://localhost:8000/api/v1/classifications?lender=JLL"
-
-# Get statistics
-curl http://localhost:8000/api/v1/stats
-```
-
-## Outlook Integration Setup (Microsoft Graph API)
-
-### Step 1: Register App in Azure Portal
-
-1. Go to [Azure Portal](https://portal.azure.com) → **App registrations** → **New registration**
-2. Name: `AcentoPartners Email Classifier`
+1. Ir a [Azure Portal](https://portal.azure.com) → **App registrations** → **New registration**
+2. Nombre: `AcentoPartners Email Classifier`
 3. Account type: **Single tenant**
-4. Redirect URI: leave blank (we use client credentials flow)
+4. Redirect URI: dejar en blanco (usamos client credentials flow)
 
-### Step 2: Configure API Permissions
+### Paso 2: Configurar permisos API
 
-1. Go to **API permissions** → **Add a permission**
-2. Select **Microsoft Graph** → **Application permissions**
-3. Add: `Mail.Read`
-4. Click **Grant admin consent** (requires admin)
+1. **API permissions** → **Add a permission**
+2. Seleccionar **Microsoft Graph** → **Application permissions**
+3. Agregar: `Mail.Read`
+4. Hacer clic en **Grant admin consent**
 
-### Step 3: Create Client Secret
+### Paso 3: Crear Client Secret
 
-1. Go to **Certificates & secrets** → **New client secret**
-2. Description: `acento-classifier`
-3. Copy the **Value** (not the Secret ID)
+1. **Certificates & secrets** → **New client secret**
+2. Descripción: `acento-classifier`
+3. Copiar el **Value** (no el Secret ID)
 
-### Step 4: Update .env
+### Paso 4: Actualizar `.env`
 
 ```env
 AZURE_TENANT_ID=your-directory-tenant-id
@@ -145,59 +125,56 @@ AZURE_CLIENT_SECRET=the-secret-value-you-copied
 OUTLOOK_MAILBOX=waivers@acentopartners.com
 ```
 
-## Project Structure
+---
 
-```
-acento-classifier/
+## Estructura del proyecto
+
+```text
+acento-classifier_v2/
 ├── app/
-│   ├── main.py                          # FastAPI application
+│   ├── main.py                    # FastAPI application entry point
 │   ├── api/
-│   │   └── routes.py                    # API endpoints
+│   │   ├── routes.py              # Endpoints clasificación/outlook
+│   │   ├── lenders.py             # CRUD lenders + form HTML
+│   │   └── emails.py              # CRUD emails + form HTML
 │   ├── core/
-│   │   ├── config.py                    # Settings (Pydantic)
-│   │   └── knowledge_base.py            # Lender/waiver matrix
+│   │   ├── config.py              # Settings (Pydantic)
+│   │   └── knowledge_base.py      # Matriz lender/waiver (RAG)
 │   ├── models/
-│   │   ├── database.py                  # SQLAlchemy models
-│   │   └── schemas.py                   # Pydantic schemas
-│   └── services/
-│       ├── orchestrator.py              # Classification pipeline
-│       ├── email_parser/
-│       │   └── parser.py                # .eml file parser
-│       ├── classifier/
-│       │   └── llm_classifier.py        # Ollama LLM classifier
-│       └── outlook/
-│           └── connector.py             # Microsoft Graph API
-├── sample_emails/                       # Drop .eml files here
-├── data/                                # SQLite DB (auto-created)
+│   │   ├── database.py            # SQLAlchemy models (PostgreSQL)
+│   │   └── schemas.py             # Pydantic schemas
+│   ├── services/
+│   │   ├── orchestrator.py        # Pipeline de clasificación
+│   │   ├── email_parser/
+│   │   │   └── parser.py          # Parser de archivos .eml
+│   │   ├── classifier/
+│   │   │   └── llm_classifier.py  # Clasificador Ollama LLM
+│   │   └── outlook/
+│   │       └── connector.py       # Microsoft Graph API
+│   └── templates/
+│       ├── emails.html            # UI HTML emails
+│       └── lenders.html           # UI HTML lenders
+├── apps/
+│   └── waiver_lender_classifier/  # Frontend React + Vite
+│       ├── src/
+│       ├── vite.config.js         # Puerto 5173, proxy → :8000
+│       └── package.json
+├── sample_emails/                 # Colocar archivos .eml aquí
+├── ingest_today.py                # Script de ingesta manual
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
 
-## Classification Matrix
+---
 
-The system classifies emails into these lender/waiver combinations:
+## Modelo LLM
 
-| Lender | Waiver Type |
-|--------|-------------|
-| JLL (Insurance Servicing) | Assault & Battery (A&B) sublimit |
-| JLL (Insurance Servicing) | Sexual Abuse & Molestation (SAM) |
-| JLL (Insurance Servicing) | Equipment Breakdown (EB) limit |
-| Capital One (Servicing) | Full Policy Package timing |
-| Freddie Mac (via JLL Real Estate Capital) | Additional Insured/Mortgagee wording |
-| Grandbridge / KeyBank / Wells Fargo | OL / BI / EPI specifics |
-| Berkadia | Invoice components (Excess/Terrorism) & Address |
-| NEWMARK (MCM Servicing) | Address / Excess lines |
-| Greystone | ACORD-gate for payment & Umbrella clarity |
+| Modelo | RAM requerida | Recomendación |
+| --- | --- | --- |
+| `llama3.1:8b` | ~8 GB VRAM | Recomendado — balance velocidad/precisión |
+| `mistral:7b` | ~6 GB VRAM | Alternativa más rápida |
+| `llama3.1:70b` | ~40 GB VRAM | Mayor precisión |
 
-## LLM Model Notes
-
-- **Recommended**: `llama3.1:8b` — best balance of speed and accuracy
-- **Alternative**: `mistral:7b` — slightly faster, good for testing
-- **Best accuracy**: `llama3.1:70b` — requires 40GB+ VRAM
-- Temperature is set to **0.1** for consistent, deterministic classifications
-- JSON mode is enforced via Ollama's `format="json"` parameter
-=======
-# OGM_Lenders
-Agente de captura de email y envio documentación seguros
->>>>>>> 8ba86d9f58d4503a5744ef5b4fee6072f79bb591
+- Temperatura: **0.1** para clasificaciones deterministas
+- Formato JSON forzado via `format="json"` de Ollama
