@@ -1,5 +1,7 @@
 # AcentoPartners Email Classifier (OGM_Lenders)
 
+[![CI](https://github.com/CarlosMartinez2018/OGM_Lenders/actions/workflows/ci.yml/badge.svg)](https://github.com/CarlosMartinez2018/OGM_Lenders/actions/workflows/ci.yml)
+
 AI-powered email classification system for AcentoPartners. Classifies incoming
 lender/bank insurance-compliance emails by **Lender** and **Waiver Type** using a
 local LLM (**Ollama**, `llama3.1:8b`) with a knowledge base stored in **PostgreSQL**.
