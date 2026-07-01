@@ -1,1 +1,41 @@
-REVISIÓN HIST. USUARIO AXA-20260316_172308-Meeting Recording.mp4
+# ─── Secrets / local env ─────────────────────────────────────────────
+.env
+.env.local
+*.env
+!.env.example
+
+# ─── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─── Node / frontend ─────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-error.log*
+
+# ─── Databases / data ────────────────────────────────────────────────
+data/postgres_db/
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── OS / editor ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ─── Large media / recordings ────────────────────────────────────────
+*.mp4

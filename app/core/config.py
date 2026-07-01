@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     # Document Management
     document_base_path: str = "./documentos"
 
-    # Database
-    database_url: str = "sqlite+aiosqlite:///./data/classifications.db"
+    # Database — PostgreSQL (see docker-compose.yml / .env.example).
+    # Host port 5433 maps to 5432 inside the postgres container.
+    database_url: str = "postgresql+asyncpg://acento:acento_secure_pass@localhost:5433/acento_db"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

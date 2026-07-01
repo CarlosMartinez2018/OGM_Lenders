@@ -366,7 +366,9 @@ class EmailClassifier:
                 options  = {"temperature": 0.1, "num_predict": 600},
                 format   = "json",
             )
-            return self._parse_response(response.message.content, domain_hint, kb["kb_entries"])
+            return self._parse_response(
+                response.message.content, domain_hint, kb["kb_entries"], email, body_text
+            )
 
         except Exception as e:
             logger.error(f"LLM classification failed for '{email.subject}': {e}")
@@ -382,7 +384,8 @@ class EmailClassifier:
     # ── Response parser ───────────────────────────────────────────
 
     def _parse_response(
-        self, raw: str, domain_hint: str | None, kb_entries: list
+        self, raw: str, domain_hint: str | None, kb_entries: list,
+        email: EmailData, body_text: str,
     ) -> ClassificationResult:
         try:
             cleaned = re.sub(r"^```json\s*", "", raw.strip())

@@ -1,7 +1,12 @@
-<<<<<<< HEAD
-# AcentoPartners Email Classifier
+# AcentoPartners Email Classifier (OGM_Lenders)
 
-AI-powered email classification system for AcentoPartners. Classifies incoming lender/bank emails by **Lender** and **Waiver Type** using a local LLM (Ollama) with a RAG-based knowledge base.
+AI-powered email classification system for AcentoPartners. Classifies incoming
+lender/bank insurance-compliance emails by **Lender** and **Waiver Type** using a
+local LLM (**Ollama**, `llama3.1:8b`) with a knowledge base stored in **PostgreSQL**.
+
+This is **Phase 1** (Ingest + Classify) of a larger end-to-end waiver-management
+pipeline (Ingest → Classify → Retrieve → Assemble → Respond). See `CONTEXTO.md`
+for the full business context and roadmap.
 
 ## Architecture
 
@@ -15,168 +20,140 @@ AI-powered email classification system for AcentoPartners. Classifies incoming l
 └─────────────────┘     └──────┬───────┘     └─────────────────┘
                                │
                         ┌──────▼───────┐
-                        │   SQLite DB   │
+                        │  PostgreSQL   │
+                        │ lenders /     │
+                        │ waivers /     │
                         │ classifications│
                         └──────────────┘
 ```
 
+The **knowledge base lives in PostgreSQL** (`lenders`, `lender_aliases`,
+`lender_domains`, `waivers`). If the DB has no active lenders, the classifier
+falls back to the static matrix in `app/core/knowledge_base.py`.
+
 ## Quick Start
 
-### 1. Install Ollama & Pull Model
+### 1. Start infrastructure (PostgreSQL + Ollama) with Docker
 
 ```bash
-# Install Ollama (macOS)
-brew install ollama
+# Brings up postgres, ollama, pulls llama3.1:8b, and the FastAPI app
+docker-compose up -d
 
-# Install Ollama (Linux)
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Start Ollama server
-ollama serve
-
-# Pull the model (in another terminal)
-ollama pull llama3.1:8b
-
-# Alternative lighter model:
-# ollama pull mistral:7b
+# ...or just the infra, if you want to run the app locally:
+docker-compose up -d postgres ollama ollama-pull
 ```
 
-### 2. Setup Project
+PostgreSQL is exposed on host port **5433** (mapped to 5432 inside the container).
+Ollama listens on **11434**.
+
+### 2. Configure environment
 
 ```bash
-# Clone/navigate to project
-cd acento-classifier
+cp .env.example .env
+# Edit .env: DATABASE_URL, OLLAMA_MODEL, and (optional) Azure/Outlook credentials.
+# Never commit .env — it is gitignored.
+```
 
-# Create virtual environment
+Set `USE_MOCK_LLM=true` to run the keyword-based mock classifier without Ollama
+(useful for local development and tests).
+
+### 3. Install dependencies & run the server (local)
+
+```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate   # Windows
-
-# Install dependencies
+source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Copy environment config
-cp .env.example .env
-# Edit .env with your settings (Ollama URL, email paths, etc.)
-```
-
-### 3. Run the Server
-
-```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open http://localhost:8000/docs for the interactive API docs (Swagger UI).
+Open http://localhost:8000/docs for the interactive Swagger UI.
 
 ## Usage
 
-### Option A: Classify .eml Files from a Folder (Batch)
-
-Place your `.eml` files in the `sample_emails/` folder, then:
+### Ingest emails into PostgreSQL (Stage 1)
 
 ```bash
+# Local .eml files (all dates)
+python ingest_today.py --source file --all-dates
+
+# Outlook, specific month (requires Azure credentials configured)
+python ingest_today.py --source outlook --month 3 --year 2026
+```
+
+### Classify (Stage 2)
+
+```bash
+# Batch a folder of .eml files
 curl -X POST http://localhost:8000/api/v1/classify/batch \
   -H "Content-Type: application/json" \
   -d '{"folder_path": "./sample_emails", "max_emails": 10}'
-```
 
-### Option B: Upload a Single .eml File
-
-```bash
+# Upload a single .eml
 curl -X POST http://localhost:8000/api/v1/classify/upload \
   -F "file=@/path/to/email.eml"
-```
 
-### Option C: Classify from Outlook (Microsoft Graph API)
-
-First configure Azure AD credentials in `.env`, then:
-
-```bash
-# Test connection
-curl http://localhost:8000/api/v1/outlook/test
-
-# Classify recent emails
+# From Outlook
 curl -X POST http://localhost:8000/api/v1/classify/outlook \
   -H "Content-Type: application/json" \
   -d '{"num_emails": 5, "folder": "Inbox"}'
 ```
 
-### View Results
+### Review results
 
 ```bash
-# List all classifications
 curl http://localhost:8000/api/v1/classifications
-
-# Filter by lender
 curl "http://localhost:8000/api/v1/classifications?lender=JLL"
-
-# Get statistics
 curl http://localhost:8000/api/v1/stats
+curl http://localhost:8000/api/v1/review-queue   # human-in-the-loop queue
 ```
 
-## Outlook Integration Setup (Microsoft Graph API)
+## Outlook Integration (Microsoft Graph API)
 
-### Step 1: Register App in Azure Portal
+1. Register an app in the [Azure Portal](https://portal.azure.com) →
+   **App registrations** (single tenant, no redirect URI — client-credentials flow).
+2. **API permissions** → Microsoft Graph → Application permissions → `Mail.Read`
+   → **Grant admin consent**.
+3. **Certificates & secrets** → new client secret; copy the **Value**.
+4. Fill `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`,
+   `OUTLOOK_MAILBOX` in `.env`.
 
-1. Go to [Azure Portal](https://portal.azure.com) → **App registrations** → **New registration**
-2. Name: `AcentoPartners Email Classifier`
-3. Account type: **Single tenant**
-4. Redirect URI: leave blank (we use client credentials flow)
-
-### Step 2: Configure API Permissions
-
-1. Go to **API permissions** → **Add a permission**
-2. Select **Microsoft Graph** → **Application permissions**
-3. Add: `Mail.Read`
-4. Click **Grant admin consent** (requires admin)
-
-### Step 3: Create Client Secret
-
-1. Go to **Certificates & secrets** → **New client secret**
-2. Description: `acento-classifier`
-3. Copy the **Value** (not the Secret ID)
-
-### Step 4: Update .env
-
-```env
-AZURE_TENANT_ID=your-directory-tenant-id
-AZURE_CLIENT_ID=your-application-client-id
-AZURE_CLIENT_SECRET=the-secret-value-you-copied
-OUTLOOK_MAILBOX=waivers@acentopartners.com
-```
+> Security: `.env` is gitignored. Never commit real secrets. If a secret is ever
+> committed, rotate it immediately in the Azure Portal.
 
 ## Project Structure
 
 ```
-acento-classifier/
+OGM_Lenders/
 ├── app/
-│   ├── main.py                          # FastAPI application
+│   ├── main.py                       # FastAPI application
 │   ├── api/
-│   │   └── routes.py                    # API endpoints
+│   │   ├── routes.py                 # Classification / review endpoints
+│   │   ├── lenders.py                # Lender KB CRUD
+│   │   └── emails.py                 # Parsed-email endpoints
 │   ├── core/
-│   │   ├── config.py                    # Settings (Pydantic)
-│   │   └── knowledge_base.py            # Lender/waiver matrix
+│   │   ├── config.py                 # Settings (Pydantic)
+│   │   ├── knowledge_base.py         # Static fallback lender/waiver matrix
+│   │   └── business_context.json     # Company context + prompt guardrails
 │   ├── models/
-│   │   ├── database.py                  # SQLAlchemy models
-│   │   └── schemas.py                   # Pydantic schemas
+│   │   ├── database.py               # SQLAlchemy models (PostgreSQL)
+│   │   └── schemas.py                # Pydantic schemas
 │   └── services/
-│       ├── orchestrator.py              # Classification pipeline
-│       ├── email_parser/
-│       │   └── parser.py                # .eml file parser
-│       ├── classifier/
-│       │   └── llm_classifier.py        # Ollama LLM classifier
-│       └── outlook/
-│           └── connector.py             # Microsoft Graph API
-├── sample_emails/                       # Drop .eml files here
-├── data/                                # SQLite DB (auto-created)
+│       ├── orchestrator.py           # Classification pipeline
+│       ├── email_parser/parser.py    # .eml parser
+│       ├── classifier/llm_classifier.py  # Ollama LLM classifier
+│       └── outlook/connector.py      # Microsoft Graph API
+├── apps/waiver_lender_classifier/    # React + Vite dashboard (source)
+├── sample_emails/                    # Example .eml files
+├── ingest_today.py                   # Ingestion CLI (file / outlook)
+├── docker-compose.yml                # postgres + ollama + app
+├── Dockerfile
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
 
 ## Classification Matrix
-
-The system classifies emails into these lender/waiver combinations:
 
 | Lender | Waiver Type |
 |--------|-------------|
@@ -189,6 +166,8 @@ The system classifies emails into these lender/waiver combinations:
 | Berkadia | Invoice components (Excess/Terrorism) & Address |
 | NEWMARK (MCM Servicing) | Address / Excess lines |
 | Greystone | ACORD-gate for payment & Umbrella clarity |
+| CBRE | General compliance |
+| M&T Bank | Multi-issue compliance |
 
 ## LLM Model Notes
 
@@ -197,7 +176,12 @@ The system classifies emails into these lender/waiver combinations:
 - **Best accuracy**: `llama3.1:70b` — requires 40GB+ VRAM
 - Temperature is set to **0.1** for consistent, deterministic classifications
 - JSON mode is enforced via Ollama's `format="json"` parameter
-=======
-# OGM_Lenders
-Agente de captura de email y envio documentación seguros
->>>>>>> 8ba86d9f58d4503a5744ef5b4fee6072f79bb591
+- The prompt includes anti-prompt-injection fencing and keyword-based escalation
+  (see `app/core/business_context.json`)
+
+## Testing
+
+```bash
+# Tests run against the mock classifier (no Ollama required)
+USE_MOCK_LLM=true pytest
+```
