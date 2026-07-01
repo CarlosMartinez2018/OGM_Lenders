@@ -17,28 +17,16 @@ from app.models.schemas import (
 from app.services.email_parser.parser import parse_eml_file, scan_email_folder
 from app.services.classifier.llm_classifier import classifier
 from app.services.outlook.connector import outlook
+from app.services.retrieval.document_finder import find_documents
 from app.core.config import settings
 import os
 
 logger = logging.getLogger(__name__)
 
+
 def find_attachments(lender: str, waiver: str, base_path: str) -> list[str]:
-    if not lender or not waiver or not base_path:
-        return []
-        
-    path = Path(base_path)
-    if not path.exists():
-        return []
-        
-    found = []
-    lender_lower = lender.lower()
-    for root, dirs, files in os.walk(path):
-        # Simplistic check: if lender name in folder path
-        if lender_lower in root.lower() or lender_lower in os.path.basename(root).lower():
-            for f in files:
-                if f.lower().endswith(".pdf"):
-                    found.append(os.path.join(root, f))
-    return found
+    """Thin wrapper around the retrieval module (kept for backward compatibility)."""
+    return find_documents(lender, waiver, base_path)
 
 def generate_draft_response(lender: str, waiver: str, attachments: list[str]) -> str:
     msg = f"Hello {lender or 'Team'},\n\nPlease find attached the requested documents for the {waiver or 'insurance'} waiver.\n"
