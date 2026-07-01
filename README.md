@@ -108,6 +108,10 @@ curl http://localhost:8000/api/v1/classifications
 curl "http://localhost:8000/api/v1/classifications?lender=JLL"
 curl http://localhost:8000/api/v1/stats
 curl http://localhost:8000/api/v1/review-queue   # human-in-the-loop queue
+
+# WaiverPack readiness for a classification (Stage 4: Assemble) —
+# reconciles KB-required documents against the ones retrieved for the email.
+curl http://localhost:8000/api/v1/classifications/<id>/waiver-pack
 ```
 
 ## Outlook Integration (Microsoft Graph API)

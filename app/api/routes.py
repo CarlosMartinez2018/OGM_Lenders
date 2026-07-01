@@ -11,12 +11,13 @@ from app.models.database import get_session, EmailClassification
 from app.models.schemas import (
     ClassificationResponse, BatchClassifyRequest, BatchClassifyResponse,
     OutlookTestRequest, ClassificationStats, CorrectionRequest,
-    CorrectionResponse, ReviewQueueResponse,
+    CorrectionResponse, ReviewQueueResponse, WaiverPack,
 )
 from app.services.email_parser.parser import parse_eml_bytes
 from app.services.classifier.llm_classifier import classifier
 from app.services.outlook.connector import outlook
 from app.services import orchestrator
+from app.services.assembly.waiver_pack_builder import assemble_waiver_pack
 from app.core.knowledge_base import find_matching_entry, get_lender_names, get_waiver_types
 from app.core.config import settings
 from pydantic import BaseModel
@@ -274,6 +275,30 @@ async def get_classification_detail(
         "created_at": str(record.created_at),
         "updated_at": str(record.updated_at),
     }
+
+
+@router.get("/classifications/{classification_id}/waiver-pack", response_model=WaiverPack)
+async def get_waiver_pack(
+    classification_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Assemble the WaiverPack (Stage 4) for a stored classification: reconcile the
+    KB-required documents against the documents retrieved for this email.
+    """
+    record = await session.get(EmailClassification, classification_id)
+    if not record:
+        raise HTTPException(404, "Classification not found")
+
+    return assemble_waiver_pack(
+        lender=record.lender or "UNKNOWN",
+        waiver_type=record.waiver_type or "UNKNOWN",
+        waiver_pack=record.waiver_pack,
+        documents_expected=record.documents_expected,
+        attachments=record.suggested_attachments or [],
+        evidence_ops=record.required_evidence_ops,
+        evidence_insurance=record.required_evidence_insurance,
+    )
 
 
 @router.post("/classifications/{classification_id}/correct", response_model=CorrectionResponse)

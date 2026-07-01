@@ -115,3 +115,34 @@ class ReviewQueueResponse(BaseModel):
     """Items pending human review."""
     total_pending: int
     items: list[ClassificationResponse]
+
+
+class WaiverPackComponent(BaseModel):
+    """A single required item within a WaiverPack and whether it's satisfied."""
+    name: str = Field(description="The required document/endorsement")
+    satisfied: bool = Field(description="True if a retrieved document matches this item")
+    matched_document: Optional[str] = Field(None, description="Filename that satisfied this item")
+    source: str = Field(description="Where the requirement came from: waiver_pack | documents_expected")
+
+
+class WaiverPack(BaseModel):
+    """
+    Assembled WaiverPack (pipeline Stage 4 — Assemble).
+
+    Reconciles what the knowledge base requires for a lender/waiver combination
+    against the documents retrieved from the library, yielding a completeness
+    checklist an operator can act on before responding.
+    """
+    lender: str
+    waiver_type: str
+    readiness: str = Field(description="complete | partial | empty")
+    total_required: int
+    total_satisfied: int
+    components: list[WaiverPackComponent] = []
+    missing: list[str] = Field(default=[], description="Names of unsatisfied required items")
+    unmatched_attachments: list[str] = Field(
+        default=[], description="Retrieved documents not mapped to any required item"
+    )
+    evidence_ops: Optional[str] = Field(None, description="Evidence required from Operations (KB)")
+    evidence_insurance: Optional[str] = Field(None, description="Evidence required for Insurance (KB)")
+    summary: str = Field(description="Human-readable readiness summary")
