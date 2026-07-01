@@ -18,6 +18,7 @@ from app.services.email_parser.parser import parse_eml_file, scan_email_folder
 from app.services.classifier.llm_classifier import classifier
 from app.services.outlook.connector import outlook
 from app.services.retrieval.document_finder import find_documents
+from app.services.drafting.draft_generator import build_draft_response
 from app.core.config import settings
 import os
 
@@ -28,13 +29,20 @@ def find_attachments(lender: str, waiver: str, base_path: str) -> list[str]:
     """Thin wrapper around the retrieval module (kept for backward compatibility)."""
     return find_documents(lender, waiver, base_path)
 
+
 def generate_draft_response(lender: str, waiver: str, attachments: list[str]) -> str:
-    msg = f"Hello {lender or 'Team'},\n\nPlease find attached the requested documents for the {waiver or 'insurance'} waiver.\n"
-    if attachments:
-        atts = "\n- ".join([os.path.basename(a) for a in attachments])
-        msg += f"\nAttachments:\n- {atts}\n"
-    msg += "\nBest regards,\nAcentoPartners Insurance Team"
-    return msg
+    """Backward-compatible wrapper. Prefer build_draft_response with the full
+    ClassificationResult, which produces a much richer, context-aware draft."""
+    return build_draft_response(
+        ClassificationResult(
+            lender=lender or "UNKNOWN",
+            waiver_type=waiver or "UNKNOWN",
+            trigger_description="",
+            confidence_score=0.0,
+            confidence_level="low",
+        ),
+        attachments,
+    )
 
 
 async def classify_single_email(
@@ -72,9 +80,9 @@ async def classify_single_email(
     def strip_null(s: str | None) -> str | None:
         return s.replace("\x00", "") if s else None
 
-    # Attachments & Response logic
+    # Attachments (Stage 3: Retrieve) & draft reply (Stage 5: Respond)
     attachments = find_attachments(result.lender, result.waiver_type, settings.document_base_path)
-    draft_msg = generate_draft_response(result.lender, result.waiver_type, attachments)
+    draft_msg = build_draft_response(result, attachments)
 
     # Persist to database
     record = EmailClassification(
